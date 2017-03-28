@@ -16,5 +16,6 @@ using namespace chai3d;
 
 
 cTransform convertMatrix(PxTransform trans);
+PxTransform convertMatrix(cTransform trans);
 
 #endif /* PhysxUtilities_h */

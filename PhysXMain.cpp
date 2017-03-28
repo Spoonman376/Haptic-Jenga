@@ -25,6 +25,11 @@ PhysXMain::PhysXMain()
   
 }
 
+PhysXMain::~PhysXMain()
+{
+  
+}
+
 
 void PhysXMain::initBlock(Block* b)
 {
@@ -37,7 +42,15 @@ void PhysXMain::initBlock(Block* b)
   
   shape->setSimulationFilterData(filterData);
   
-  PxRigidDynamic *body = gPhysics->createRigidDynamic(PxTransform(PxVec3(pos.x(), pos.y(), pos.z())));
+  cVector3d axis;
+  double angle;
+  b->getRotation().toAxisAngle(axis, angle);
+  
+  PxTransform trans = PxTransform(PxVec3(pos.x(), pos.y(), pos.z()), PxQuat(angle, PxVec3(axis.x(), axis.y(), axis.z())));
+  
+  PxRigidDynamic *body = gPhysics->createRigidDynamic(trans);
+  
+  
   
   body->setMass(0.0106875);
   

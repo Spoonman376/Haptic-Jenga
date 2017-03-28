@@ -16,8 +16,6 @@ private:
   // PhysX Object
   PxRigidDynamic* physXBlock;
   
-  
-  
   cMesh* createWall(double width, double height, cVector3d pos, cVector3d axis, double angle);
   
 public:
@@ -31,6 +29,8 @@ public:
   const double dimZ = 0.015 * scale;
   
   cVector3d getPosition();
+  cMatrix3d getRotation();
+
   void setPosition(cVector3d);
   void setRotation(cMatrix3d);
   

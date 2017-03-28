@@ -14,11 +14,16 @@ Block::Block()
 
   blockFrame->addChild(createWall(dimX, dimZ, cVector3d(0.0, dimY / 2.0, 0.0), cVector3d(1.0, 0.0, 0.0), M_PI/2));
   blockFrame->addChild(createWall(dimX, dimZ, cVector3d(0.0, -dimY / 2.0, 0.0), cVector3d(1.0, 0.0, 0.0), -M_PI/2));
+  
+  
+  physXBlock = nullptr;
 }
 
 Block::~Block()
 {
-  
+  blockFrame->removeFromGraph();
+  blockFrame->deleteAllChildren();
+  delete blockFrame;
 }
 
 cMesh* Block::createWall(double width, double height, cVector3d pos, cVector3d axis, double angle)
@@ -40,14 +45,34 @@ cVector3d Block::getPosition()
   return blockFrame->getLocalPos();
 }
 
+cMatrix3d Block::getRotation()
+{
+  return blockFrame->getLocalRot();
+}
+
 void Block::setPosition(cVector3d pos)
 {
   blockFrame->setLocalPos(pos);
+  
+  if (physXBlock != nullptr)
+    physXBlock->getGlobalPose().p = PxVec3(pos.x(), pos.y(), pos.z());
 }
+
+
 
 void Block::setRotation(cMatrix3d rot)
 {
   blockFrame->setLocalRot(rot);
+  
+  if (physXBlock != nullptr)
+  {
+    cVector3d axis;
+    double angle;
+    
+    rot.toAxisAngle(axis, angle);
+    
+    physXBlock->getGlobalPose().q = PxQuat(angle, PxVec3(axis.x(), axis.y(), axis.z()));
+  }
 }
 
 
@@ -61,13 +86,13 @@ void Block::setActor(PxRigidDynamic* b)
   physXBlock = b;
 }
 
-
-
 void Block::update()
 {
   PxTransform t = physXBlock->getGlobalPose();
   cTransform m = convertMatrix(t);
   
   blockFrame->setLocalTransform(m);
-  
 }
+
+
+

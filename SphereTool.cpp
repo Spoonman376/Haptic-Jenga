@@ -9,7 +9,7 @@ SphereTool::SphereTool(double r)
 {
   radius = r;
   sphere = new cShapeSphere(radius);
-  sphere->setLocalPos(cVector3d(0,0.03, 0.01));
+  sphere->setLocalPos(cVector3d(0.0, 0.0, 0.0));
 }
 
 void SphereTool::addToWorld(cWorld *world)

@@ -5,9 +5,8 @@
 //==============================================================================
 
 //------------------------------------------------------------------------------
-#include "PhysXMain.h"
 #include "chai3d.h"
-#include "Wall.h"
+#include "Game.h"
 //------------------------------------------------------------------------------
 #include <GLFW/glfw3.h>
 //------------------------------------------------- -----------------------------
@@ -67,6 +66,8 @@ cLabel* labelRates;
 // a small sphere (cursorRight) representing the haptic device 
 
 Block* block;
+Block* block2;
+
 Wall* floorWall;
 PhysXMain* physics;
 
@@ -279,13 +280,19 @@ int main(int argc, char* argv[])
   block->setPosition(cVector3d(0,0,0.1));
   block->addToWorld(world);
   
+  block2 = new Block();
+  block2->setPosition(cVector3d(0,0,0.05));
+  block2->addToWorld(world);
+  
+  
   floorWall = new Wall(1.0, 1.0, cVector3d(0.0, 0.0, 0.0), cVector3d(0.0, 0.0, 1.0), 0.0, "tiles.jpg");
   floorWall->addToWorld(world);
   
   physics = new PhysXMain();
   physics->initScene();
   physics->initBlock(block);
-
+  physics->initBlock(block2);
+  
 
   //--------------------------------------------------------------------------
   // HAPTIC DEVICE
@@ -596,7 +603,7 @@ void updateHaptics(void)
     }
     
     // read user-switch status (button 0)
-    bool button = false;
+    // bool button = false;
     //rightHand->getUserSwitch(0, button);
   
     double t = timer.getCurrentTimeSeconds();
@@ -610,6 +617,7 @@ void updateHaptics(void)
     
     // for (Block* block : blocks)
     block->update();
+    block2->update();
     
     for (int i = 0; i < hands.size(); ++i)
     {
