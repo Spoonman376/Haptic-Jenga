@@ -55,3 +55,19 @@ void Block::addToWorld(cWorld* world)
 {
   world->addChild(blockFrame);
 }
+
+void Block::setActor(PxRigidDynamic* b)
+{
+  physXBlock = b;
+}
+
+
+
+void Block::update()
+{
+  PxTransform t = physXBlock->getGlobalPose();
+  cTransform m = convertMatrix(t);
+  
+  blockFrame->setLocalTransform(m);
+  
+}

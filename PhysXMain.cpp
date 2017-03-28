@@ -11,7 +11,7 @@ PhysXMain::PhysXMain()
   gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, profileZoneManager);
   
   PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
-  sceneDesc.gravity = PxVec3(0.0f, 0.0f, 0.01*-9.81f);
+  sceneDesc.gravity = PxVec3(0.0f, 0.0f, 0.05*-9.81f);
   gDispatcher = PxDefaultCpuDispatcherCreate(2);
   sceneDesc.cpuDispatcher = gDispatcher;
   
@@ -20,9 +20,8 @@ PhysXMain::PhysXMain()
   //sceneDesc.contactModifyCallback = new ContactModifyCallback(this);
   gScene = gPhysics->createScene(sceneDesc);
   
-  gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.0f);	//static friction, dynamic friction, restitution
-  
-  //gCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, PxCookingParams(PxTolerancesScale()));
+  //static friction, dynamic friction, restitution
+  gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.5f);
   
 }
 
@@ -43,8 +42,36 @@ void PhysXMain::initBlock(Block* b)
   body->setMass(0.0106875);
   
   body->attachShape(*shape);
+  
+  b->setActor(body);
   gScene->addActor(*body);
   objectMap.insert(make_pair(body, b));
+}
+
+
+void PhysXMain::initSphere(SphereTool *s)
+{
+  PxShape* shape = gPhysics->createShape(PxSphereGeometry(s->radius), *gMaterial);
+  cVector3d pos = s->getPosition();
+  
+  PxFilterData filterData;
+  filterData.word0 = filter::CURSOR; // word0 = own ID
+  filterData.word1 = filter::CURSOR | filter::CURSOR | filter::PLANE;  // word1 = ID mask to filter pairs that trigger a contact callback
+  
+  shape->setSimulationFilterData(filterData);
+  
+  PxRigidDynamic *body = gPhysics->createRigidDynamic(PxTransform(PxVec3(pos.x(), pos.y(), pos.z())));
+  
+  body->setMass(1.0);
+  
+  body->attachShape(*shape);
+  
+  body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+  
+  s->setActor(body);
+  
+  gScene->addActor(*body);
+  toolMap.insert(make_pair(body, s));
 }
 
 void PhysXMain::initScene()
@@ -70,34 +97,8 @@ void PhysXMain::initScene()
 
 void PhysXMain::stepPhysics(double t)
 {
-  
   gScene->simulate(t);
   gScene->fetchResults(true);
-
-  map<PxRigidActor*, Block*>::iterator itr = objectMap.begin();
-  while (itr != objectMap.end())
-  {
-    PxRigidActor* body = itr->first;
-    if (body != nullptr && itr->second != nullptr)
-    {
-      PxVec3 pos = body->getGlobalPose().p;
-      
-      itr->second->setPosition(cVector3d(pos.x, pos.y, pos.z));
-      
-      PxReal angle = 0;
-      PxVec3 axis;
-      
-      body->getGlobalPose().q.toRadiansAndUnitAxis(angle, axis);
-      
-      cMatrix3d M;
-      M.setAxisAngleRotationRad(cVector3d(axis.x, axis.y, axis.z), (double)angle);
-      
-      itr->second->setRotation(M);
-      
-    }
-    
-    ++itr;
-  }
 }
 
 

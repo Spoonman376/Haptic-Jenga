@@ -5,23 +5,20 @@
 #define PhysXMain_h
 
 #include <stdio.h>
-#include "PxScene.h"
-#include "PxPhysics.h"
-#include "PxPhysicsAPI.h"
+#include "PhysxUtilities.h"
 
 #include "JengaFilterShader.h"
 
 #include "Block.h"
+#include "SphereTool.h"
 
-using namespace physx;
-using namespace std;
-using namespace chai3d;
 
 
 class PhysXMain
 {
 private:
   map<PxRigidActor*, Block*> objectMap;
+  map<PxRigidActor*, SphereTool*> toolMap;
   
   PxDefaultAllocator		      gAllocator;
   PxDefaultErrorCallback    	gErrorCallback;
@@ -29,28 +26,20 @@ private:
   PxPhysics*				          gPhysics = NULL;
   PxDefaultCpuDispatcher*   	gDispatcher = NULL;
   PxScene*				            gScene = NULL;
-  //PxCooking*				          gCooking = NULL;
   PxMaterial*				          gMaterial = NULL;
-  //PxVisualDebuggerConnection* gConnection = NULL;
-  //VehicleSceneQueryData*	    gVehicleSceneQueryData = NULL;
   PxBatchQuery*			          gBatchQuery = NULL;
-  //PxRigidStatic*			        gGroundPlane = NULL;
-  //PxVehicleDrivableSurfaceToTireFrictionPairs* gFrictionPairs = NULL;
-  //bool					gIsVehicleInAir = true; // unused
   
   
 public:
   PhysXMain();
   ~PhysXMain();
   
-  //vector<GEO*> deletedObjects;
-
   void collisionFunction(PxContactModifyPair* const, PxU32);
   
   void initBlock(Block* b);
+  void initSphere(SphereTool* s);
   void initScene();
   
-
   void stepPhysics(double t);
   void cleanupPhysics(bool interactive);
   

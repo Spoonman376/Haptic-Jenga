@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include "chai3d.h"
+#include "PhysxUtilities.h"
 
 using namespace chai3d;
 using namespace std;
@@ -21,7 +22,7 @@ public:
   ~Wall();
   
   
-  
+  void addToWorld(cWorld* world);
 };
 
 

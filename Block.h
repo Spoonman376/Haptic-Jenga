@@ -3,6 +3,7 @@
 #define Block_h
 
 #include "chai3d.h"
+#include "PhysXUtilities.h"
 
 using namespace chai3d;
 
@@ -13,6 +14,8 @@ private:
   cGenericObject* blockFrame;
 
   // PhysX Object
+  PxRigidDynamic* physXBlock;
+  
   
   
   cMesh* createWall(double width, double height, cVector3d pos, cVector3d axis, double angle);
@@ -32,6 +35,9 @@ public:
   void setRotation(cMatrix3d);
   
   void addToWorld(cWorld* world);
+  void setActor(PxRigidDynamic* b);
+  
+  void update();
 };
 
 
