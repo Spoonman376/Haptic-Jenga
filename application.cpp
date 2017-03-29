@@ -45,6 +45,7 @@ cCamera* camera;
 double mouseOldX;
 double mouseOldY;
 
+Game* game;
 
 // a light source to illuminate the objects in the world
 cDirectionalLight *light;
@@ -54,22 +55,21 @@ cHapticDeviceHandler* handler;
 
 // a pointer to the current haptic device
 
-vector<cGenericHapticDevicePtr> hands;
-vector<SphereTool*> cursors;
-
-SphereTool* cursorLeft;
-SphereTool* cursorRight;
+//vector<SphereTool*> cursors;
+//
+//SphereTool* cursorLeft;
+//SphereTool* cursorRight;
 
 // a label to display the rates [Hz] at which the simulation is running
 cLabel* labelRates;
 
 // a small sphere (cursorRight) representing the haptic device 
 
-Block* block;
-Block* block2;
-
-Wall* floorWall;
-PhysXMain* physics;
+//Block* block;
+//Block* block2;
+//
+//Wall* floorWall;
+//PhysXMain* physics;
 
 // flag to indicate if the haptic simulation currently running
 bool simulationRunning = false;
@@ -275,29 +275,13 @@ int main(int argc, char* argv[])
 
   // define direction of light beam
   light->setDir(-1.0, 0.0, -10.5);
-  
-  block = new Block();
-  block->setPosition(cVector3d(0,0,0.1));
-  block->addToWorld(world);
-  
-  block2 = new Block();
-  block2->setPosition(cVector3d(0,0,0.05));
-  block2->addToWorld(world);
-  
-  
-  floorWall = new Wall(1.0, 1.0, cVector3d(0.0, 0.0, 0.0), cVector3d(0.0, 0.0, 1.0), 0.0, "tiles.jpg");
-  floorWall->addToWorld(world);
-  
-  physics = new PhysXMain();
-  physics->initScene();
-  physics->initBlock(block);
-  physics->initBlock(block2);
-  
 
   //--------------------------------------------------------------------------
   // HAPTIC DEVICE
   //--------------------------------------------------------------------------
 
+  vector<cGenericHapticDevicePtr> hands;
+  
   // create a haptic device handler
   handler = new cHapticDeviceHandler();
 
@@ -311,25 +295,7 @@ int main(int argc, char* argv[])
   if(handler->getDevice(leftHand, 1))
     hands.push_back(leftHand);
   
-  for (cGenericHapticDevicePtr hand : hands)
-  {
-    hand->open();
-    hand->calibrate();
-    
-    // create the cursor to go along with the device
-    SphereTool* cursor = new SphereTool();
-    cursor->addToWorld(world);
-    physics->initSphere(cursor);
-    cursors.push_back(cursor);
-    
-    cHapticDeviceInfo info = hand->getSpecifications();
-    
-    if (info.m_sensedRotation == true)
-      cursor->setUp();
-    
-    hand->setEnableGripperUserSwitch(true);
-  }
-  
+  game = new Game(hands, world);
 
   //--------------------------------------------------------------------------
   // WIDGETS
@@ -521,8 +487,9 @@ void close(void)
   while (!simulationFinished) { cSleepMs(100); }
 
   // close haptic device
-  for (cGenericHapticDevicePtr hand : hands)
-    hand->close();
+//  for (cGenericHapticDevicePtr hand : hands)
+//    hand->close();
+  delete game;
   
   // delete resources
   delete hapticsThread;
@@ -573,68 +540,12 @@ void updateHaptics(void)
   simulationRunning  = true;
   simulationFinished = false;
   
-  cPrecisionClock timer;
-  timer.start(true);
-
+  game->start();
+  
   // main haptic simulation loop
   while(simulationRunning)
-  {
-
-    /* Read the positions from the devices
-     * Apply forces to the physx cursors
-     */
-    
-    vector<cVector3d> positions;
-    
-    for (int i = 0; i < hands.size(); ++i)
-    {
-      cGenericHapticDevicePtr hand = hands[i];
-      SphereTool* cursor = cursors[i];
-      
-      cVector3d position;
-      hand->getPosition(position);
-      positions.push_back(position);
-      
-      
-      cVector3d force = position - cursor->getPosition();
-      force *= 20;
-      
-      cursor->applyForce(force);
-    }
-    
-    // read user-switch status (button 0)
-    // bool button = false;
-    //rightHand->getUserSwitch(0, button);
-  
-    double t = timer.getCurrentTimeSeconds();
-    timer.reset();
-    
-    physics->stepPhysics(t);
-    
-    /* update position and orienation of the scene objects
-     * apply forces back to the devices
-     */
-    
-    // for (Block* block : blocks)
-    block->update();
-    block2->update();
-    
-    for (int i = 0; i < hands.size(); ++i)
-    {
-      cGenericHapticDevicePtr hand = hands[i];
-      SphereTool* cursor = cursors[i];
-
-      cVector3d force(0, 0, 0);
-      cVector3d torque(0, 0, 0);
-      double gripperForce = 0.0;
-  
-      cursor->update();
-      
-      force = cursor->getPosition() - positions[i];
-      force *= 20;
-      
-      hand->setForceAndTorqueAndGripperForce(force, torque, gripperForce);
-    }
+  {    
+    game->gameLoop();
     
     // signal frequency counter
     freqCounterHaptics.signal(1);

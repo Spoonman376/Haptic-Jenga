@@ -29,26 +29,121 @@ Game::Game(vector<cGenericHapticDevicePtr> devicePtrs, cWorld* world)
   
   
   //create 9 blocks
-  for (int i = 0; i < 9; ++i)
+  for (int i = 0; i < (levels * 3); ++i)
   {
-    blocks.push_back(new Block());
+    Block* b = new Block();
+    blocks.push_back(b);
+    physics.initBlock(b);
+    b->addToWorld(world);
   }
   
+  Wall* floor = new Wall(1.0, 1.0, cVector3d(0.0, 0.0, 0.0), cVector3d(0.0, 0.0, 1.0), 0.0, "tiles.jpg");
+  floor->addToWorld(world);
+  physics.initWall(floor);
 }
 
 Game::~Game()
 {
+  for (cGenericHapticDevicePtr hand : hands)
+    hand->close();
   
+  for (SphereTool* cursor : cursors)
+    delete cursor;
+  
+  for (Block* block : blocks)
+    delete block;
+  
+  for (Wall* wall : room)
+    delete wall;
 }
-
-
-
 
 
 void Game::start()
 {
-
+  reset();
+  
+  timer.start();
 }
+
+
+void Game::reset()
+{
+  for (int i = 0; i < levels; ++i)
+  {
+    Block* b1 = blocks[(i * 3)];
+    Block* b2 = blocks[(i * 3) + 1];
+    Block* b3 = blocks[(i * 3) + 2];
+    
+    cMatrix3d rotation = cMatrix3d(cVector3d(0, 0, 1), (i % 4) * M_PI_2);
+    
+    b1->setPosition(rotation * cVector3d(-b1->dimX * 1.02, 0, (i + 1) * b1->dimZ *1.1));
+    b2->setPosition(cVector3d(0, 0, (i + 1) * b2->dimZ * 1.02));
+    b3->setPosition(rotation * cVector3d(b3->dimX * 1.02, 0, (i + 1) * b2->dimZ * 1.1));
+    
+    b1->setRotation(rotation);
+    b2->setRotation(rotation);
+    b3->setRotation(rotation);
+  }
+}
+
+void Game::gameLoop()
+{
+  /* Read the positions from the devices
+   * Apply forces to the physx cursors
+   */
+  vector<cVector3d> positions;
+  
+  for (int i = 0; i < hands.size(); ++i)
+  {
+    cGenericHapticDevicePtr hand = hands[i];
+    SphereTool* cursor = cursors[i];
+    
+    cVector3d position;
+    hand->getPosition(position);
+    positions.push_back(position);
+    
+    cVector3d force = position - cursor->getPosition();
+    force *= 20;
+    
+    cursor->applyForce(force);
+  }
+  
+  // read user-switch status (button 0)
+  // bool button = false;
+  //rightHand->getUserSwitch(0, button);
+  
+  double t = timer.getCurrentTimeSeconds();
+  timer.reset();
+  
+  physics.stepPhysics(t);
+  
+  /* update position and orienation of the scene objects
+   * apply forces back to the devices
+   */
+  
+  for (Block* block : blocks)
+    block->update();
+  
+  for (int i = 0; i < hands.size(); ++i)
+  {
+    cGenericHapticDevicePtr hand = hands[i];
+    SphereTool* cursor = cursors[i];
+    
+    cVector3d force(0, 0, 0);
+    cVector3d torque(0, 0, 0);
+    double gripperForce = 0.0;
+    
+    cursor->update();
+    
+    force = cursor->getPosition() - positions[i];
+    force *= 20;
+    
+    hand->setForceAndTorqueAndGripperForce(force, torque, gripperForce);
+  }
+}
+
+
+
 
 
 

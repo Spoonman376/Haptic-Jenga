@@ -12,6 +12,13 @@ SphereTool::SphereTool(double r)
   sphere->setLocalPos(cVector3d(0.0, 0.0, 0.0));
 }
 
+SphereTool::~SphereTool()
+{
+  sphere->removeFromGraph();
+  sphere->deleteAllChildren();
+  delete sphere;
+}
+
 void SphereTool::addToWorld(cWorld *world)
 {
   world->addChild(sphere);
@@ -32,7 +39,6 @@ void SphereTool::update()
   PxVec3 pos = physXSphere->getGlobalPose().p;
   
   sphere->setLocalPos(cVector3d(pos.x, pos.y, pos.z));
-  
 }
 
 void SphereTool::setUp()

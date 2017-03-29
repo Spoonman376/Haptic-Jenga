@@ -22,8 +22,14 @@ private:
   PhysXMain physics;
   
   bool started;
+  cPrecisionClock timer;
+  
+  int levels = 5;
   
 public:
+  
+  bool simulationRunning;
+  bool simulationFinished;
   
   Game(vector<cGenericHapticDevicePtr>, cWorld*);
   ~Game();
@@ -31,7 +37,7 @@ public:
   void reset();
   void setup();
   void start();
-  
+  void gameLoop();
 };
 
 #endif /* Game_h */

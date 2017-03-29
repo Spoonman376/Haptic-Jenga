@@ -87,7 +87,7 @@ void PhysXMain::initSphere(SphereTool *s)
 
 void PhysXMain::initWall(Wall* w)
 {
-  PxShape* shape = gPhysics->createShape(PxBoxGeometry(w->getWidth(), w->getHeight(), 0.05), *gMaterial);
+  PxShape* shape = gPhysics->createShape(PxBoxGeometry(w->getWidth() / 2.0, w->getHeight() / 2.0, 0.05), *gMaterial);
   
   PxFilterData filterData;
   filterData.word0 = filter::BLOCK; // word0 = own ID

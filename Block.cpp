@@ -55,7 +55,11 @@ void Block::setPosition(cVector3d pos)
   blockFrame->setLocalPos(pos);
   
   if (physXBlock != nullptr)
-    physXBlock->getGlobalPose().p = PxVec3(pos.x(), pos.y(), pos.z());
+  {
+    PxTransform trans = physXBlock->getGlobalPose();
+    trans.p = PxVec3(pos.x(), pos.y(), pos.z());
+    physXBlock->setGlobalPose(trans);
+  }
 }
 
 
@@ -71,7 +75,9 @@ void Block::setRotation(cMatrix3d rot)
     
     rot.toAxisAngle(axis, angle);
     
-    physXBlock->getGlobalPose().q = PxQuat(angle, PxVec3(axis.x(), axis.y(), axis.z()));
+    PxTransform trans = physXBlock->getGlobalPose();
+    trans.q = PxQuat(angle, PxVec3(axis.x(), axis.y(), axis.z()));
+    physXBlock->setGlobalPose(trans);
   }
 }
 

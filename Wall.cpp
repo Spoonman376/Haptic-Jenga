@@ -24,6 +24,13 @@ Wall::Wall(double w, double h, cVector3d pos, cVector3d axis, double angle, stri
   wall->setLocalPos(cVector3d(pos.x(), pos.y(), pos.z()));
 }
 
+Wall::~Wall()
+{
+  wall->removeFromGraph();
+  wall->deleteAllChildren();
+  delete wall;
+}
+
 
 cVector3d Wall::getPosition()
 {
@@ -49,7 +56,6 @@ double Wall::getHeight()
 {
   return height;
 }
-
 
 void Wall::addToWorld(cWorld *world)
 {
