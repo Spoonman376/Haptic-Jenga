@@ -274,7 +274,7 @@ int main(int argc, char* argv[])
   light->setEnabled(true);
 
   // define direction of light beam
-  light->setDir(-1.0, -0.2, -0.2);
+  light->setDir(-1.0, 0.0, -10.5);
   
   block = new Block();
   block->setPosition(cVector3d(0,0,0.1));

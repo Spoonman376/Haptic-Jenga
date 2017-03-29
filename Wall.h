@@ -15,14 +15,25 @@ class Wall
 {
 private:
   cMesh *wall;
+  double width;
+  double height;
+  cVector3d normal;
   
+  PxRigidStatic* physXWall;
   
 public:
   Wall(double width, double height, cVector3d pos, cVector3d axis, double angle, string textureFile);
   ~Wall();
   
+  cVector3d getPosition();
+  cMatrix3d getRotation();
+  
+  cVector3d getNormal();
+  double getWidth();
+  double getHeight();
   
   void addToWorld(cWorld* world);
+  void setActor(PxRigidStatic*);
 };
 
 

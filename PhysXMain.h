@@ -11,6 +11,7 @@
 
 #include "Block.h"
 #include "SphereTool.h"
+#include "Wall.h"
 
 
 
@@ -38,6 +39,7 @@ public:
   
   void initBlock(Block* b);
   void initSphere(SphereTool* s);
+  void initWall(Wall* w);
   void initScene();
   
   void stepPhysics(double t);
