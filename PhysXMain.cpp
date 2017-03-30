@@ -35,13 +35,7 @@ void PhysXMain::initBlock(Block* b)
 {
   PxShape* shape = gPhysics->createShape(PxBoxGeometry(b->dimX / 2.0, b->dimY / 2.0, b->dimZ / 2.0), *gMaterial);
   cVector3d pos = b->getPosition();
-  
-  PxFilterData filterData;
-  filterData.word0 = filter::BLOCK; // word0 = own ID
-  filterData.word1 = filter::BLOCK | filter::CURSOR | filter::PLANE;  // word1 = ID mask to filter pairs that trigger a contact callback
-  
-  shape->setSimulationFilterData(filterData);
-  
+    
   cVector3d axis;
   double angle;
   b->getRotation().toAxisAngle(axis, angle);
@@ -49,12 +43,14 @@ void PhysXMain::initBlock(Block* b)
   PxTransform trans = PxTransform(PxVec3(pos.x(), pos.y(), pos.z()), PxQuat(angle, PxVec3(axis.x(), axis.y(), axis.z())));
   
   PxRigidDynamic *body = gPhysics->createRigidDynamic(trans);
+  body->attachShape(*shape);
+  
   
   body->setMass(0.0106875);
   
-  body->attachShape(*shape);
-  
   b->setActor(body);
+  b->disableInteraction();
+  
   gScene->addActor(*body);
   objectMap.insert(make_pair(body, b));
 }
@@ -64,12 +60,6 @@ void PhysXMain::initSphere(SphereTool *s)
 {
   PxShape* shape = gPhysics->createShape(PxSphereGeometry(s->radius), *gMaterial);
   cVector3d pos = s->getPosition();
-  
-  PxFilterData filterData;
-  filterData.word0 = filter::CURSOR; // word0 = own ID
-  filterData.word1 = filter::CURSOR | filter::CURSOR | filter::PLANE;  // word1 = ID mask to filter pairs that trigger a contact callback
-  
-  shape->setSimulationFilterData(filterData);
   
   PxRigidDynamic *body = gPhysics->createRigidDynamic(PxTransform(PxVec3(pos.x(), pos.y(), pos.z())));
   
@@ -81,12 +71,17 @@ void PhysXMain::initSphere(SphereTool *s)
   
   s->setActor(body);
   
+  // Set simulation data
+  s->disableInteraction();
+
   gScene->addActor(*body);
   toolMap.insert(make_pair(body, s));
 }
 
 void PhysXMain::initWall(Wall* w)
 {
+  
+  // Create the shape
   PxShape* shape = gPhysics->createShape(PxBoxGeometry(w->getWidth() / 2.0, w->getHeight() / 2.0, 0.05), *gMaterial);
   
   PxFilterData filterData;
@@ -95,6 +90,8 @@ void PhysXMain::initWall(Wall* w)
   
   shape->setSimulationFilterData(filterData);
   
+  
+  // Create the Actor
   cVector3d n = w->getNormal(); //normal
   cVector3d p = w->getPosition(); // position
   cVector3d a; // axis of rotation
@@ -102,36 +99,15 @@ void PhysXMain::initWall(Wall* w)
   w->getRotation().toAxisAngle(a, angle);
   
   PxVec3 position = PxVec3(p.x(), p.y(), p.z()) - 0.05 * PxVec3(n.x(), n.y(), n.z());
-  
   PxTransform trans = PxTransform(position, PxQuat(angle, PxVec3(a.x(), a.y(), a.z())));
-
   PxRigidStatic* plane = gPhysics->createRigidStatic(trans);
   
   plane->attachShape(*shape);
   
+  // Add the actor to the scene
   w->setActor(plane);
   gScene->addActor(*plane);
 }
-
-void PhysXMain::initScene()
-{
-  
-  //PxShape* shape = gPhysics->createShape(PxPlane(PxVec3(0,1,0), 0), *gMaterial);
-  
-  PxShape* shape = gPhysics->createShape(PxBoxGeometry(0.5, 0.5, 0.05), *gMaterial);
-  
-  PxFilterData filterData;
-  filterData.word0 = filter::BLOCK; // word0 = own ID
-  filterData.word1 = filter::BLOCK | filter::CURSOR;  // word1 = ID mask to filter pairs that trigger a contact callback
-
-  shape->setSimulationFilterData(filterData);
-
-  PxRigidStatic* plane = gPhysics->createRigidStatic(PxTransform(PxVec3(0.0, 0.0, -0.05)));
-
-  plane->attachShape(*shape);
-  gScene->addActor(*plane);
-}
-
 
 
 void PhysXMain::stepPhysics(double t)

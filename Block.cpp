@@ -82,6 +82,48 @@ void Block::setRotation(cMatrix3d rot)
 }
 
 
+void Block::enableInteraction()
+{
+  PxU32 numShapes = physXBlock->getNbShapes();
+  
+  PxShape** shapes;
+  shapes = new PxShape*[numShapes];
+  
+  physXBlock->getShapes(shapes, numShapes);
+  
+  for (int i = 0; i < numShapes; ++i)
+  {
+    PxShape* shape = shapes[i];
+    PxFilterData filterData;
+    filterData.word0 = filter::BLOCK; // word0 = own ID
+    filterData.word1 = filter::BLOCK | filter::PLANE | filter::CURSOR;
+    
+    shape->setSimulationFilterData(filterData);
+  }
+}
+
+void Block::disableInteraction()
+{
+  PxU32 numShapes = physXBlock->getNbShapes();
+  
+  PxShape** shapes;
+  shapes = new PxShape*[numShapes];
+  
+  physXBlock->getShapes(shapes, numShapes);
+  
+  for (int i = 0; i < numShapes; ++i)
+  {
+    PxShape* shape = shapes[i];
+    PxFilterData filterData;
+    filterData.word0 = filter::BLOCK; // word0 = own ID
+    filterData.word1 = filter::BLOCK | filter::PLANE;
+    
+    shape->setSimulationFilterData(filterData);
+  }
+}
+
+
+
 void Block::addToWorld(cWorld* world)
 {
   world->addChild(blockFrame);

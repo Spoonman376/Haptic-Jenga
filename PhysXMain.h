@@ -40,7 +40,6 @@ public:
   void initBlock(Block* b);
   void initSphere(SphereTool* s);
   void initWall(Wall* w);
-  void initScene();
   
   void stepPhysics(double t);
   void cleanupPhysics(bool interactive);

@@ -31,6 +31,11 @@ public:
   void update();
   void setUp();
   
+  void enableInteraction();
+  void disableInteraction();
+  
+  void setPosition(cVector3d pos);
+  
   void applyForce(cVector3d force);
 };
 

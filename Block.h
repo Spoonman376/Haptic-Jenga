@@ -34,6 +34,9 @@ public:
   void setPosition(cVector3d);
   void setRotation(cMatrix3d);
   
+  void enableInteraction();
+  void disableInteraction();
+  
   void addToWorld(cWorld* world);
   void setActor(PxRigidDynamic* b);
   

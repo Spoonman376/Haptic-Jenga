@@ -36,9 +36,12 @@ void SphereTool::setActor(PxRigidDynamic* s)
 
 void SphereTool::update()
 {
-  PxVec3 pos = physXSphere->getGlobalPose().p;
-  
-  sphere->setLocalPos(cVector3d(pos.x, pos.y, pos.z));
+  if (physXSphere != nullptr)
+  {
+    PxVec3 pos = physXSphere->getGlobalPose().p;
+    
+    sphere->setLocalPos(cVector3d(pos.x, pos.y, pos.z));
+  }
 }
 
 void SphereTool::setUp()
@@ -51,12 +54,72 @@ void SphereTool::setUp()
 }
 
 
+void SphereTool::enableInteraction()
+{
+  PxU32 numShapes = physXSphere->getNbShapes();
+  
+  PxShape** shapes;
+  shapes = new PxShape*[numShapes];
+  
+  physXSphere->getShapes(shapes, numShapes);
+  
+  for (int i = 0; i < numShapes; ++i)
+  {
+    PxShape* shape = shapes[i];
+    PxFilterData filterData;
+    filterData.word0 = filter::CURSOR; // word0 = own ID
+    filterData.word1 = filter::CURSOR | filter::PLANE | filter::BLOCK;
+    
+    shape->setSimulationFilterData(filterData);
+  }
+}
+
+void SphereTool::disableInteraction()
+{
+  PxU32 numShapes = physXSphere->getNbShapes();
+  
+  PxShape** shapes;
+  shapes = new PxShape*[numShapes];
+  
+  physXSphere->getShapes(shapes, numShapes);
+  
+  for (int i = 0; i < numShapes; ++i)
+  {
+    PxShape* shape = shapes[i];
+    PxFilterData filterData;
+    filterData.word0 = filter::CURSOR; // word0 = own ID
+    filterData.word1 = filter::CURSOR | filter::PLANE;
+    
+    shape->setSimulationFilterData(filterData);
+  }
+}
+
+
+
+void SphereTool::setPosition(cVector3d pos)
+{
+  sphere->setLocalPos(pos);
+  
+  if (physXSphere != nullptr)
+  {
+    PxTransform trans = physXSphere->getGlobalPose();
+    trans.p = PxVec3(pos.x(), pos.y(), pos.z());
+    physXSphere->setGlobalPose(trans);
+  }
+}
 
 void SphereTool::applyForce(cVector3d force)
 {
-  PxVec3 f = PxVec3(force.x(), force.y(), force.z());
-  physXSphere->addForce(f);
+  if (physXSphere != nullptr)
+  {
+    PxVec3 f = PxVec3(force.x(), force.y(), force.z());
+    physXSphere->addForce(f);
+  }
 }
+
+
+
+
 
 
 

@@ -14,6 +14,13 @@ using namespace physx;
 using namespace std;
 using namespace chai3d;
 
+enum filter
+{
+  BLOCK     = (1 << 0),
+  CURSOR    = (1 << 1),
+  PLANE     = (1 << 2),
+};
+
 
 cTransform convertMatrix(PxTransform trans);
 PxTransform convertMatrix(cTransform trans);

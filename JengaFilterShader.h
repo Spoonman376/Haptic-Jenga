@@ -11,13 +11,6 @@
 
 using namespace physx;
 
-enum filter
-{
-  BLOCK     = (1 << 0),
-  CURSOR    = (1 << 1),
-  PLANE     = (1 << 2),
-};
-
 PxFilterFlags JengaFilterShader
 (PxFilterObjectAttributes attributes0, PxFilterData filterData0,
  PxFilterObjectAttributes attributes1, PxFilterData filterData1,

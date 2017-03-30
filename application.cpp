@@ -289,9 +289,11 @@ int main(int argc, char* argv[])
   cGenericHapticDevicePtr leftHand;
   
   // get a handle to the haptic devices
+  //handler->getDevice(rightHand, 0);
   if(handler->getDevice(rightHand, 0))
     hands.push_back(rightHand);
   
+  //handler->getDevice(leftHand, 1);
   if(handler->getDevice(leftHand, 1))
     hands.push_back(leftHand);
   
@@ -467,13 +469,17 @@ void keyCallback(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, 
       glfwSwapInterval(swapInterval);
     }
   }
-
   // option - toggle vertical mirroring
   else if (a_key == GLFW_KEY_M)
   {
       mirroredDisplay = !mirroredDisplay;
       camera->setMirrorVertical(mirroredDisplay);
   }
+  else if (a_key == GLFW_KEY_R)
+  {
+    game->reset();
+  }
+  
 }
 
 //------------------------------------------------------------------------------
@@ -541,7 +547,7 @@ void updateHaptics(void)
   simulationFinished = false;
   
   game->start();
-  
+    
   // main haptic simulation loop
   while(simulationRunning)
   {    

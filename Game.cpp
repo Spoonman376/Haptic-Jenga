@@ -16,7 +16,7 @@ Game::Game(vector<cGenericHapticDevicePtr> devicePtrs, cWorld* world)
     // create the cursor to go along with the device
     SphereTool* cursor = new SphereTool();
     cursor->addToWorld(world);
-    //physics.initSphere(cursor);
+    physics.initSphere(cursor);
     cursors.push_back(cursor);
     
     cHapticDeviceInfo info = hand->getSpecifications();
@@ -26,7 +26,6 @@ Game::Game(vector<cGenericHapticDevicePtr> devicePtrs, cWorld* world)
     
     hand->setEnableGripperUserSwitch(true);
   }
-  
   
   //create 9 blocks
   for (int i = 0; i < (levels * 3); ++i)
@@ -55,19 +54,26 @@ Game::~Game()
   
   for (Wall* wall : room)
     delete wall;
+  
+  physics.cleanupPhysics(true);
 }
 
 
 void Game::start()
 {
+  lock = false;
   reset();
-  
-  timer.start();
 }
 
 
 void Game::reset()
 {
+  gameRunning = false;
+  while (lock);
+  
+  timer.stop();
+  timer.reset();
+  
   for (int i = 0; i < levels; ++i)
   {
     Block* b1 = blocks[(i * 3)];
@@ -76,18 +82,71 @@ void Game::reset()
     
     cMatrix3d rotation = cMatrix3d(cVector3d(0, 0, 1), (i % 4) * M_PI_2);
     
-    b1->setPosition(rotation * cVector3d(-b1->dimX * 1.02, 0, (i + 1) * b1->dimZ *1.1));
-    b2->setPosition(cVector3d(0, 0, (i + 1) * b2->dimZ * 1.02));
-    b3->setPosition(rotation * cVector3d(b3->dimX * 1.02, 0, (i + 1) * b2->dimZ * 1.1));
+    b1->setPosition(rotation * cVector3d(-b1->dimX * 1.02, 0, (i + 1) * b1->dimZ * 1.1));
+    b2->setPosition(           cVector3d(0,                0, (i + 1) * b2->dimZ * 1.1));
+    b3->setPosition(rotation * cVector3d(b3->dimX * 1.02,  0, (i + 1) * b2->dimZ * 1.1));
     
     b1->setRotation(rotation);
     b2->setRotation(rotation);
     b3->setRotation(rotation);
   }
+  
+  disableInteraction();
+  
+  gameRunning = true;
+  timer.start();
+}
+
+void Game::enableInteraction()
+{
+  for (SphereTool* cursor : cursors)
+    cursor->enableInteraction();
+  
+  for (Block* block : blocks)
+    block->enableInteraction();
+  
+  interactionEnabled = true;
+}
+
+void Game::disableInteraction()
+{
+  for (SphereTool* cursor : cursors)
+    cursor->disableInteraction();
+  
+  for (Block* block : blocks)
+    block->disableInteraction();
+  
+  interactionEnabled = false;
+}
+
+void Game::checkEnableInteraction()
+{
+  bool enable = true;
+  
+  for (cGenericHapticDevicePtr hand : hands)
+  {
+    bool b = false;
+    hand->getUserSwitch(0, b);
+    enable = enable && b;
+  }
+  
+  if (enable)
+    enableInteraction();
 }
 
 void Game::gameLoop()
 {
+  if(!gameRunning)
+  {
+    lock = false;
+    while (!gameRunning);
+    lock = true;
+  }
+  
+  if (!interactionEnabled)
+    checkEnableInteraction();
+    
+  
   /* Read the positions from the devices
    * Apply forces to the physx cursors
    */
@@ -107,10 +166,6 @@ void Game::gameLoop()
     
     cursor->applyForce(force);
   }
-  
-  // read user-switch status (button 0)
-  // bool button = false;
-  //rightHand->getUserSwitch(0, button);
   
   double t = timer.getCurrentTimeSeconds();
   timer.reset();

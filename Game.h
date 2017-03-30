@@ -21,23 +21,27 @@ private:
   
   PhysXMain physics;
   
-  bool started;
   cPrecisionClock timer;
   
+  bool lock;
+  bool gameRunning;
+  bool interactionEnabled;
   int levels = 5;
+  
+  void checkEnableInteraction();
   
 public:
   
-  bool simulationRunning;
-  bool simulationFinished;
   
   Game(vector<cGenericHapticDevicePtr>, cWorld*);
   ~Game();
   
-  void reset();
-  void setup();
   void start();
+  void reset();
   void gameLoop();
+  
+  void enableInteraction();
+  void disableInteraction();
 };
 
 #endif /* Game_h */
