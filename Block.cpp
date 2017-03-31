@@ -59,6 +59,11 @@ void Block::setPosition(cVector3d pos)
     PxTransform trans = physXBlock->getGlobalPose();
     trans.p = PxVec3(pos.x(), pos.y(), pos.z());
     physXBlock->setGlobalPose(trans);
+    
+    physXBlock->clearForce();
+    physXBlock->clearTorque();
+    physXBlock->setLinearVelocity(PxVec3(0,0,0));
+    physXBlock->setAngularVelocity(PxVec3(0,0,0));
   }
 }
 
@@ -116,7 +121,7 @@ void Block::disableInteraction()
     PxShape* shape = shapes[i];
     PxFilterData filterData;
     filterData.word0 = filter::BLOCK; // word0 = own ID
-    filterData.word1 = filter::BLOCK | filter::PLANE;
+    filterData.word1 = filter::BLOCK | filter::PLANE | filter::CURSOR;
     
     shape->setSimulationFilterData(filterData);
   }

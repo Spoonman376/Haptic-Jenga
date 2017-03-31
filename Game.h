@@ -26,9 +26,10 @@ private:
   bool lock;
   bool gameRunning;
   bool interactionEnabled;
-  int levels = 5;
+  int levels = 3;
   
   void checkEnableInteraction();
+  void testScene();
   
 public:
   

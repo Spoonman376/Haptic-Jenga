@@ -247,7 +247,7 @@ int main(int argc, char* argv[])
   world->addChild(camera);
 
   // position and orient the camera
-  camera->set( cVector3d (0.25, 0.0, 0.1),    // camera position (eye)
+  camera->set( cVector3d (0.15, 0.0, 0.05),    // camera position (eye)
                cVector3d (0.0, 0.0, 0.0),    // look at position (target)
                cVector3d (0.0, 0.0, 1.0));   // direction of the (up) vector
 

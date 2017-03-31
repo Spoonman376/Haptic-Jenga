@@ -22,8 +22,9 @@ public:
   Block();
   ~Block();
   
-  const double scale = 1.0;
+  const double scale = 0.5;
   
+  const double mass = 0.1;
   const double dimX = 0.025 * scale;
   const double dimY = 0.075 * scale;
   const double dimZ = 0.015 * scale;

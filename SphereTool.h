@@ -20,10 +20,11 @@ private:
 
   
 public:
-  SphereTool(double r = 0.005);
+  SphereTool();
   ~SphereTool();
   
-  double radius = 0.005;
+  const double radius = 0.003;
+  const double mass = 1.0;
   
   cVector3d getPosition();
   void addToWorld(cWorld* world);

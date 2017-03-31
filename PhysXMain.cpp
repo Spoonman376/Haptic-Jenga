@@ -11,7 +11,7 @@ PhysXMain::PhysXMain()
   gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, profileZoneManager);
   
   PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
-  sceneDesc.gravity = PxVec3(0.0f, 0.0f, 0.05*-9.81f);
+  sceneDesc.gravity = PxVec3(0.0f, 0.0f, gravity);
   gDispatcher = PxDefaultCpuDispatcherCreate(2);
   sceneDesc.cpuDispatcher = gDispatcher;
   
@@ -21,7 +21,7 @@ PhysXMain::PhysXMain()
   gScene = gPhysics->createScene(sceneDesc);
   
   //static friction, dynamic friction, restitution
-  gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.5f);
+  gMaterial = gPhysics->createMaterial(1.0f, 1.0f, 0.6f);
   
 }
 
@@ -45,8 +45,7 @@ void PhysXMain::initBlock(Block* b)
   PxRigidDynamic *body = gPhysics->createRigidDynamic(trans);
   body->attachShape(*shape);
   
-  
-  body->setMass(0.0106875);
+  PxRigidBodyExt::updateMassAndInertia(*body, 10000.0);
   
   b->setActor(body);
   b->disableInteraction();
@@ -63,9 +62,11 @@ void PhysXMain::initSphere(SphereTool *s)
   
   PxRigidDynamic *body = gPhysics->createRigidDynamic(PxTransform(PxVec3(pos.x(), pos.y(), pos.z())));
   
-  body->setMass(1.0);
+  body->setMass(s->mass);
   
   body->attachShape(*shape);
+  body->setLinearDamping(1.0);
+  body->setAngularDamping(0.5);
   
   body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
   

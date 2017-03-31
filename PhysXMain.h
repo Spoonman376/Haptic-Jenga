@@ -35,6 +35,8 @@ public:
   PhysXMain();
   ~PhysXMain();
   
+  const double gravity = -9.81 * 1.0;
+  
   void collisionFunction(PxContactModifyPair* const, PxU32);
   
   void initBlock(Block* b);

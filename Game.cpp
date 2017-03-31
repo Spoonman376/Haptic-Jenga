@@ -16,7 +16,6 @@ Game::Game(vector<cGenericHapticDevicePtr> devicePtrs, cWorld* world)
     // create the cursor to go along with the device
     SphereTool* cursor = new SphereTool();
     cursor->addToWorld(world);
-    physics.initSphere(cursor);
     cursors.push_back(cursor);
     
     cHapticDeviceInfo info = hand->getSpecifications();
@@ -25,10 +24,16 @@ Game::Game(vector<cGenericHapticDevicePtr> devicePtrs, cWorld* world)
       cursor->setUp();
     
     hand->setEnableGripperUserSwitch(true);
+    
+    cVector3d pos;
+    hand->getPosition(pos);
+    cursor->setPosition(pos);
+    physics.initSphere(cursor);
   }
   
   //create 9 blocks
-  for (int i = 0; i < (levels * 3); ++i)
+//  for (int i = 0; i < (levels * 3); ++i)
+  for (int i = 0; i < 2; ++ i)
   {
     Block* b = new Block();
     blocks.push_back(b);
@@ -66,6 +71,19 @@ void Game::start()
 }
 
 
+void Game::testScene()
+{
+  Block* b1 = blocks[0];
+  Block* b2 = blocks[1];
+  cMatrix3d rotation = cMatrix3d(cVector3d(0, 0, 1),  M_PI_2);
+
+  b1->setPosition(rotation * cVector3d(-b1->dimX * 1.02, 0, (2) * b1->dimZ * 1.1));
+  b2->setPosition(           cVector3d(-b1->dimX * 1.3, 0, (1) * b2->dimZ * 1.1));
+
+  b1->setRotation(rotation);
+  b2->setRotation(cMatrix3d(cVector3d(0, 0, 1),  0));
+}
+
 void Game::reset()
 {
   gameRunning = false;
@@ -74,22 +92,24 @@ void Game::reset()
   timer.stop();
   timer.reset();
   
-  for (int i = 0; i < levels; ++i)
-  {
-    Block* b1 = blocks[(i * 3)];
-    Block* b2 = blocks[(i * 3) + 1];
-    Block* b3 = blocks[(i * 3) + 2];
-    
-    cMatrix3d rotation = cMatrix3d(cVector3d(0, 0, 1), (i % 4) * M_PI_2);
-    
-    b1->setPosition(rotation * cVector3d(-b1->dimX * 1.02, 0, (i + 1) * b1->dimZ * 1.1));
-    b2->setPosition(           cVector3d(0,                0, (i + 1) * b2->dimZ * 1.1));
-    b3->setPosition(rotation * cVector3d(b3->dimX * 1.02,  0, (i + 1) * b2->dimZ * 1.1));
-    
-    b1->setRotation(rotation);
-    b2->setRotation(rotation);
-    b3->setRotation(rotation);
-  }
+  testScene();
+  
+//  for (int i = 0; i < levels; ++i)
+//  {
+//    Block* b1 = blocks[(i * 3)];
+//    Block* b2 = blocks[(i * 3) + 1];
+//    Block* b3 = blocks[(i * 3) + 2];
+//    
+//    cMatrix3d rotation = cMatrix3d(cVector3d(0, 0, 1), (i % 4) * M_PI_2);
+//    
+//    b1->setPosition(rotation * cVector3d(-b1->dimX * 1.02, 0, (i + 1) * b1->dimZ * 1.1));
+//    b2->setPosition(           cVector3d(0,                0, (i + 1) * b2->dimZ * 1.1));
+//    b3->setPosition(rotation * cVector3d(b3->dimX * 1.02,  0, (i + 1) * b2->dimZ * 1.1));
+//    
+//    b1->setRotation(rotation);
+//    b2->setRotation(rotation);
+//    b3->setRotation(rotation);
+//  }
   
   disableInteraction();
   
@@ -142,7 +162,7 @@ void Game::gameLoop()
     while (!gameRunning);
     lock = true;
   }
-  
+    
   if (!interactionEnabled)
     checkEnableInteraction();
     
@@ -150,7 +170,6 @@ void Game::gameLoop()
   /* Read the positions from the devices
    * Apply forces to the physx cursors
    */
-  vector<cVector3d> positions;
   
   for (int i = 0; i < hands.size(); ++i)
   {
@@ -159,13 +178,14 @@ void Game::gameLoop()
     
     cVector3d position;
     hand->getPosition(position);
-    positions.push_back(position);
     
     cVector3d force = position - cursor->getPosition();
-    force *= 20;
+    force *= 800;
     
     cursor->applyForce(force);
   }
+  
+  //while(timer.getCurrentTimeSeconds() < 0.00099);
   
   double t = timer.getCurrentTimeSeconds();
   timer.reset();
@@ -190,8 +210,10 @@ void Game::gameLoop()
     
     cursor->update();
     
-    force = cursor->getPosition() - positions[i];
-    force *= 20;
+    cVector3d position;
+    hand->getPosition(position);
+    force = cursor->getPosition() - position;
+    force *= 800;
     
     hand->setForceAndTorqueAndGripperForce(force, torque, gripperForce);
   }

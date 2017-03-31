@@ -5,9 +5,8 @@
 
 
 
-SphereTool::SphereTool(double r)
+SphereTool::SphereTool()
 {
-  radius = r;
   sphere = new cShapeSphere(radius);
   sphere->setLocalPos(cVector3d(0.0, 0.0, 0.0));
 }
@@ -88,7 +87,7 @@ void SphereTool::disableInteraction()
     PxShape* shape = shapes[i];
     PxFilterData filterData;
     filterData.word0 = filter::CURSOR; // word0 = own ID
-    filterData.word1 = filter::CURSOR | filter::PLANE;
+    filterData.word1 = filter::CURSOR | filter::PLANE | filter::BLOCK;
     
     shape->setSimulationFilterData(filterData);
   }
@@ -100,12 +99,12 @@ void SphereTool::setPosition(cVector3d pos)
 {
   sphere->setLocalPos(pos);
   
-  if (physXSphere != nullptr)
-  {
-    PxTransform trans = physXSphere->getGlobalPose();
-    trans.p = PxVec3(pos.x(), pos.y(), pos.z());
-    physXSphere->setGlobalPose(trans);
-  }
+//  if (physXSphere != nullptr)
+//  {
+//    PxTransform trans = physXSphere->getGlobalPose();
+//    trans.p = PxVec3(pos.x(), pos.y(), pos.z());
+//    physXSphere->setGlobalPose(trans);
+//  }
 }
 
 void SphereTool::applyForce(cVector3d force)
