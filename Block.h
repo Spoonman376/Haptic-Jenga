@@ -14,7 +14,6 @@ private:
   cGenericObject* blockFrame;
 
   // PhysX Object
-  PxRigidDynamic* physXBlock;
   
   cMesh* createWall(double width, double height, cVector3d pos, cVector3d axis, double angle);
   
@@ -22,6 +21,8 @@ public:
   Block();
   ~Block();
   
+  PxRigidDynamic* physXBlock;
+
   const double scale = 0.5;
   
   const double mass = 0.1;

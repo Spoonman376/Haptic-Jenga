@@ -15,7 +15,8 @@ PhysXMain::PhysXMain()
   gDispatcher = PxDefaultCpuDispatcherCreate(2);
   sceneDesc.cpuDispatcher = gDispatcher;
   
-  sceneDesc.filterShader = JengaFilterShader;	
+  sceneDesc.filterShader = JengaFilterShader;
+  sceneDesc.contactModifyCallback = new ContactModifyCallback(this);
   
   //sceneDesc.contactModifyCallback = new ContactModifyCallback(this);
   gScene = gPhysics->createScene(sceneDesc);
@@ -34,6 +35,11 @@ PhysXMain::~PhysXMain()
 void PhysXMain::initBlock(Block* b)
 {
   PxShape* shape = gPhysics->createShape(PxBoxGeometry(b->dimX / 2.0, b->dimY / 2.0, b->dimZ / 2.0), *gMaterial);
+  
+  shape->setContactOffset(0.001);
+  cout << shape->getContactOffset() << endl;
+  cout << shape->getRestOffset() << endl;
+  
   cVector3d pos = b->getPosition();
     
   cVector3d axis;
@@ -45,11 +51,19 @@ void PhysXMain::initBlock(Block* b)
   PxRigidDynamic *body = gPhysics->createRigidDynamic(trans);
   body->attachShape(*shape);
   
-  PxRigidBodyExt::updateMassAndInertia(*body, 10000.0);
+  PxRigidBodyExt::updateMassAndInertia(*body, 15000.0);
   
+  body->setLinearDamping(1.0);
+  body->setAngularDamping(1.0);
+
   b->setActor(body);
-  b->disableInteraction();
   
+  PxFilterData filterData;
+  filterData.word0 = filter::BLOCK; // word0 = own ID
+  filterData.word1 = filter::PLANE | filter::CURSOR;
+  
+  shape->setSimulationFilterData(filterData);
+    
   gScene->addActor(*body);
   objectMap.insert(make_pair(body, b));
 }
@@ -62,18 +76,23 @@ void PhysXMain::initSphere(SphereTool *s)
   
   PxRigidDynamic *body = gPhysics->createRigidDynamic(PxTransform(PxVec3(pos.x(), pos.y(), pos.z())));
   
+  
   body->setMass(s->mass);
   
   body->attachShape(*shape);
   body->setLinearDamping(1.0);
-  body->setAngularDamping(0.5);
+  body->setAngularDamping(1.0);
   
   body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
   
   s->setActor(body);
   
   // Set simulation data
-  s->disableInteraction();
+  PxFilterData filterData;
+  filterData.word0 = filter::CURSOR; // word0 = own ID
+  filterData.word1 = filter::BLOCK | filter::PLANE | filter::CURSOR;
+  
+  shape->setSimulationFilterData(filterData);
 
   gScene->addActor(*body);
   toolMap.insert(make_pair(body, s));
@@ -86,7 +105,7 @@ void PhysXMain::initWall(Wall* w)
   PxShape* shape = gPhysics->createShape(PxBoxGeometry(w->getWidth() / 2.0, w->getHeight() / 2.0, 0.05), *gMaterial);
   
   PxFilterData filterData;
-  filterData.word0 = filter::BLOCK; // word0 = own ID
+  filterData.word0 = filter::PLANE; // word0 = own ID
   filterData.word1 = filter::BLOCK | filter::CURSOR;  // word1 = ID mask to filter pairs that trigger a contact callback
   
   shape->setSimulationFilterData(filterData);

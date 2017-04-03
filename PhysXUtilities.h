@@ -5,6 +5,7 @@
 #define PhysxUtilities_h
 
 #include <stdio.h>
+#include <map>
 #include "chai3d.h"
 #include "PxScene.h"
 #include "PxPhysics.h"

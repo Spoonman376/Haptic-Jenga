@@ -78,10 +78,12 @@ void Game::testScene()
   cMatrix3d rotation = cMatrix3d(cVector3d(0, 0, 1),  M_PI_2);
 
   b1->setPosition(rotation * cVector3d(-b1->dimX * 1.02, 0, (2) * b1->dimZ * 1.1));
-  b2->setPosition(           cVector3d(-b1->dimX * 1.3, 0, (1) * b2->dimZ * 1.1));
+  b2->setPosition(           cVector3d( b1->dimX * 1.90, 0, (1) * b2->dimZ * 1.1));
 
   b1->setRotation(rotation);
   b2->setRotation(cMatrix3d(cVector3d(0, 0, 1),  0));
+  
+  b2->physXBlock->setMassSpaceInertiaTensor(PxVec3(0,0,0));
 }
 
 void Game::reset()
@@ -180,12 +182,12 @@ void Game::gameLoop()
     hand->getPosition(position);
     
     cVector3d force = position - cursor->getPosition();
-    force *= 800;
+    force *= 100;
     
     cursor->applyForce(force);
   }
-  
-  //while(timer.getCurrentTimeSeconds() < 0.00099);
+    
+  while(timer.getCurrentTimeSeconds() < 0.00099);
   
   double t = timer.getCurrentTimeSeconds();
   timer.reset();
@@ -213,7 +215,7 @@ void Game::gameLoop()
     cVector3d position;
     hand->getPosition(position);
     force = cursor->getPosition() - position;
-    force *= 800;
+    force *= 100;
     
     hand->setForceAndTorqueAndGripperForce(force, torque, gripperForce);
   }

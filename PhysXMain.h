@@ -5,6 +5,7 @@
 #define PhysXMain_h
 
 #include <stdio.h>
+
 #include "PhysxUtilities.h"
 
 #include "JengaFilterShader.h"
@@ -12,6 +13,7 @@
 #include "Block.h"
 #include "SphereTool.h"
 #include "Wall.h"
+#include "ContactModifyCallback.h"
 
 
 
@@ -34,8 +36,8 @@ private:
 public:
   PhysXMain();
   ~PhysXMain();
-  
-  const double gravity = -9.81 * 1.0;
+    
+  const double gravity = -9.81 * 0.002;
   
   void collisionFunction(PxContactModifyPair* const, PxU32);
   
@@ -45,7 +47,7 @@ public:
   
   void stepPhysics(double t);
   void cleanupPhysics(bool interactive);
-  
+    
   cMatrix3d convertMat(PxVec3 x, PxVec3 y, PxVec3 z, PxVec3 w);
 };
 
