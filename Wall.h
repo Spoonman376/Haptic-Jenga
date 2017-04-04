@@ -22,7 +22,7 @@ private:
   PxRigidStatic* physXWall;
   
 public:
-  Wall(double width, double height, cVector3d pos, cVector3d axis, double angle, string textureFile);
+  Wall(double width, double height, cVector3d pos, cVector3d axis, double angle, string texFile);
   ~Wall();
   
   cVector3d getPosition();

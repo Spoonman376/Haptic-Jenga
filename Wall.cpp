@@ -3,7 +3,7 @@
 
 
 
-Wall::Wall(double w, double h, cVector3d pos, cVector3d axis, double angle, string textureFile)
+Wall::Wall(double w, double h, cVector3d pos, cVector3d axis, double angle, string texFile)
 {
   wall = new cMesh();
   
@@ -16,7 +16,7 @@ Wall::Wall(double w, double h, cVector3d pos, cVector3d axis, double angle, stri
   cCreatePlane(wall, width, height);
   wall->m_texture = cTexture2d::create();
   
-  if (!wall->m_texture->loadFromFile(textureFile))
+  if (!wall->m_texture->loadFromFile(texFile))
     cout << "texture load failed" << endl;
   
   wall->setUseTexture(true);

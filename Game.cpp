@@ -7,7 +7,7 @@
 Game::Game(vector<cGenericHapticDevicePtr> devicePtrs, cWorld* world)
 {
   hands = devicePtrs;
-  
+    
   for (cGenericHapticDevicePtr hand : hands)
   {
     hand->open();
@@ -32,8 +32,8 @@ Game::Game(vector<cGenericHapticDevicePtr> devicePtrs, cWorld* world)
   }
   
   //create 9 blocks
-//  for (int i = 0; i < (levels * 3); ++i)
-  for (int i = 0; i < 2; ++ i)
+  for (int i = 0; i < (levels * 3); ++i)
+//  for (int i = 0; i < 2; ++ i)
   {
     Block* b = new Block();
     blocks.push_back(b);
@@ -59,8 +59,6 @@ Game::~Game()
   
   for (Wall* wall : room)
     delete wall;
-  
-  physics.cleanupPhysics(true);
 }
 
 
@@ -83,7 +81,7 @@ void Game::testScene()
   b1->setRotation(rotation);
   b2->setRotation(cMatrix3d(cVector3d(0, 0, 1),  0));
   
-  b2->physXBlock->setMassSpaceInertiaTensor(PxVec3(0,0,0));
+//  b2->physXBlock->setMassSpaceInertiaTensor(PxVec3(0,0,0));
 }
 
 void Game::reset()
@@ -94,24 +92,24 @@ void Game::reset()
   timer.stop();
   timer.reset();
   
-  testScene();
+//  testScene();
   
-//  for (int i = 0; i < levels; ++i)
-//  {
-//    Block* b1 = blocks[(i * 3)];
-//    Block* b2 = blocks[(i * 3) + 1];
-//    Block* b3 = blocks[(i * 3) + 2];
-//    
-//    cMatrix3d rotation = cMatrix3d(cVector3d(0, 0, 1), (i % 4) * M_PI_2);
-//    
-//    b1->setPosition(rotation * cVector3d(-b1->dimX * 1.02, 0, (i + 1) * b1->dimZ * 1.1));
-//    b2->setPosition(           cVector3d(0,                0, (i + 1) * b2->dimZ * 1.1));
-//    b3->setPosition(rotation * cVector3d(b3->dimX * 1.02,  0, (i + 1) * b2->dimZ * 1.1));
-//    
-//    b1->setRotation(rotation);
-//    b2->setRotation(rotation);
-//    b3->setRotation(rotation);
-//  }
+  for (int i = 0; i < levels; ++i)
+  {
+    Block* b1 = blocks[(i * 3)];
+    Block* b2 = blocks[(i * 3) + 1];
+    Block* b3 = blocks[(i * 3) + 2];
+    
+    cMatrix3d rotation = cMatrix3d(cVector3d(0, 0, 1), (i % 4) * M_PI_2);
+    
+    b1->setPosition(rotation * cVector3d(-b1->dimX * 1.02, 0, (i + 1) * b1->dimZ * 1.1));
+    b2->setPosition(           cVector3d(0,                0, (i + 1) * b2->dimZ * 1.1));
+    b3->setPosition(rotation * cVector3d(b3->dimX * 1.02,  0, (i + 1) * b2->dimZ * 1.1));
+    
+    b1->setRotation(rotation);
+    b2->setRotation(rotation);
+    b3->setRotation(rotation);
+  }
   
   disableInteraction();
   
@@ -221,7 +219,10 @@ void Game::gameLoop()
   }
 }
 
-
+void Game::renderLoop(int width, int height)
+{
+  
+}
 
 
 

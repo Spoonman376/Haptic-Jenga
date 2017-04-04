@@ -24,8 +24,7 @@ public:
   ~SphereTool();
   
   const double radius = 0.003;
-  const double mass = 0.1;
-  
+    
   cVector3d getPosition();
   void addToWorld(cWorld* world);
   void setActor(PxRigidDynamic* s);

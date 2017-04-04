@@ -18,17 +18,21 @@ PhysXMain::PhysXMain()
   sceneDesc.filterShader = JengaFilterShader;
   sceneDesc.contactModifyCallback = new ContactModifyCallback(this);
   
-  //sceneDesc.contactModifyCallback = new ContactModifyCallback(this);
   gScene = gPhysics->createScene(sceneDesc);
   
   //static friction, dynamic friction, restitution
   gMaterial = gPhysics->createMaterial(1.0f, 1.0f, 0.6f);
-  
 }
 
 PhysXMain::~PhysXMain()
 {
+  gScene->release();
+  gDispatcher->release();
+  gPhysics->getProfileZoneManager()->release();
+  gPhysics->release();
+  gFoundation->release();
   
+  printf("PhysX done.\n");
 }
 
 
@@ -36,9 +40,7 @@ void PhysXMain::initBlock(Block* b)
 {
   PxShape* shape = gPhysics->createShape(PxBoxGeometry(b->dimX / 2.0, b->dimY / 2.0, b->dimZ / 2.0), *gMaterial);
   
-  shape->setContactOffset(0.001);
-  cout << shape->getContactOffset() << endl;
-  cout << shape->getRestOffset() << endl;
+  shape->setContactOffset(contactOffset);
   
   cVector3d pos = b->getPosition();
     
@@ -58,12 +60,6 @@ void PhysXMain::initBlock(Block* b)
 
   b->setActor(body);
   
-  PxFilterData filterData;
-  filterData.word0 = filter::BLOCK; // word0 = own ID
-  filterData.word1 = filter::PLANE | filter::CURSOR;
-  
-  shape->setSimulationFilterData(filterData);
-    
   gScene->addActor(*body);
   objectMap.insert(make_pair(body, b));
 }
@@ -72,12 +68,14 @@ void PhysXMain::initBlock(Block* b)
 void PhysXMain::initSphere(SphereTool *s)
 {
   PxShape* shape = gPhysics->createShape(PxSphereGeometry(s->radius), *gMaterial);
+  shape->setContactOffset(contactOffset);
+  
   cVector3d pos = s->getPosition();
   
   PxRigidDynamic *body = gPhysics->createRigidDynamic(PxTransform(PxVec3(pos.x(), pos.y(), pos.z())));
   
   
-  body->setMass(s->mass);
+//  body->setMass(s->mass);
   
   body->attachShape(*shape);
   body->setLinearDamping(1.0);
@@ -87,22 +85,16 @@ void PhysXMain::initSphere(SphereTool *s)
   
   s->setActor(body);
   
-  // Set simulation data
-  PxFilterData filterData;
-  filterData.word0 = filter::CURSOR; // word0 = own ID
-  filterData.word1 = filter::BLOCK | filter::PLANE | filter::CURSOR;
-  
-  shape->setSimulationFilterData(filterData);
-
   gScene->addActor(*body);
   toolMap.insert(make_pair(body, s));
 }
 
 void PhysXMain::initWall(Wall* w)
 {
-  
   // Create the shape
   PxShape* shape = gPhysics->createShape(PxBoxGeometry(w->getWidth() / 2.0, w->getHeight() / 2.0, 0.05), *gMaterial);
+  
+  shape->setContactOffset(contactOffset);
   
   PxFilterData filterData;
   filterData.word0 = filter::PLANE; // word0 = own ID
@@ -134,18 +126,4 @@ void PhysXMain::stepPhysics(double t)
 {
   gScene->simulate(t);
   gScene->fetchResults(true);
-}
-
-
-void PhysXMain::cleanupPhysics(bool interactive)
-{
-  PX_UNUSED(interactive);
-  gScene->release();
-  gDispatcher->release();
-  PxProfileZoneManager* profileZoneManager = gPhysics->getProfileZoneManager();
-  gPhysics->release();
-  profileZoneManager->release();
-  gFoundation->release();
-  
-  printf("PhysX done.\n");
 }

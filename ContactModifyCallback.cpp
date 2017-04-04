@@ -15,9 +15,6 @@ void ContactModifyCallback::onContactModify(PxContactModifyPair* const pairs, Px
 
 void PhysXMain::collisionFunction(PxContactModifyPair* const pairs, PxU32 count)
 {
-  const PxU32 bufferSize = 64;
-  PxContactPairPoint contact[bufferSize];
-  
   for (PxU32 i = 0; i < count; ++i)
   {
     const PxRigidDynamic* d0 = pairs[i].actor[0]->is<PxRigidDynamic>();
@@ -32,7 +29,7 @@ void PhysXMain::collisionFunction(PxContactModifyPair* const pairs, PxU32 count)
       
       if (b0 != nullptr && b1 != nullptr)
       {
-        cout << "Contact! " << endl;
+        
       }
     }
   }

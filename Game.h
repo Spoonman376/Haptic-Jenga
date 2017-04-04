@@ -9,6 +9,7 @@
 #include "SphereTool.h"
 #include "Wall.h"
 #include "PhysXMain.h"
+#include "Tool.h"
 
 class Game {
 private:
@@ -32,7 +33,10 @@ private:
   void testScene();
   
 public:
+  cWorld* world;
+  cCamera* camera;
   
+  cVector3d cameraLookAt;
   
   Game(vector<cGenericHapticDevicePtr>, cWorld*);
   ~Game();
@@ -40,6 +44,9 @@ public:
   void start();
   void reset();
   void gameLoop();
+  
+  void renderLoop(int width, int height);
+  
   
   void enableInteraction();
   void disableInteraction();

@@ -523,6 +523,8 @@ void updateGraphics(void)
   // RENDER SCENE
   /////////////////////////////////////////////////////////////////////
 
+  game->renderLoop(width, height);
+  
   // update shadow maps (if any)
   world->updateShadowMaps(false, mirroredDisplay);
 
