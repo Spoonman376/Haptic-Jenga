@@ -4,8 +4,38 @@
 #include "Game.h"
 
 
-Game::Game(vector<cGenericHapticDevicePtr> devicePtrs, cWorld* world)
+Game::Game(vector<cGenericHapticDevicePtr> devicePtrs)
 {
+  
+  // Initial chai3d world set up
+  world = new cWorld();
+  camera = new cCamera(world);
+  world->addChild(camera);
+  
+  camera->setSphericalRad(0.2, M_PI / 3.0, 0);
+  
+  // set the near and far clipping planes of the camera
+  camera->setClippingPlanes(0.01, 10.0);
+  
+  // create a directional light source
+  light = new cSpotLight(world);
+  
+  // insert light source inside world
+  world->addChild(light);
+  
+  // enable light source
+  light->setEnabled(true);
+  light->setShadowMapEnabled(true);
+  light->setShadowMapProperties(0.01, 10);
+  light->m_shadowMap->setQualityVeryHigh();
+  light->m_shadowMap->setCamera(camera);
+  
+  // define direction of light beam
+  light->setLocalPos(cVector3d(0.5, 0.5, 0.5));
+  light->setDir(-1.0, -0.5, -1.5);
+  light->setSpotExponent(0.001);
+  
+  
   hands = devicePtrs;
     
   for (cGenericHapticDevicePtr hand : hands)
@@ -35,7 +65,7 @@ Game::Game(vector<cGenericHapticDevicePtr> devicePtrs, cWorld* world)
   for (int i = 0; i < (levels * 3); ++i)
 //  for (int i = 0; i < 2; ++ i)
   {
-    Block* b = new Block();
+    Block* b = new Block(scale);
     blocks.push_back(b);
     physics.initBlock(b);
     b->addToWorld(world);
@@ -59,6 +89,9 @@ Game::~Game()
   
   for (Wall* wall : room)
     delete wall;
+  
+  world->deleteAllChildren();
+  delete world;
 }
 
 
@@ -178,24 +211,22 @@ void Game::gameLoop()
     
     cVector3d position;
     hand->getPosition(position);
+    position *= scale;
     
     cVector3d force = position - cursor->getPosition();
-    force *= 100;
+    force *= 100.0 / scale;
     
     cursor->applyForce(force);
   }
     
-  while(timer.getCurrentTimeSeconds() < 0.00099);
-  
-  double t = timer.getCurrentTimeSeconds();
+  while(timer.getCurrentTimeSeconds() < 0.001);
   timer.reset();
   
-  physics.stepPhysics(t);
+  physics.stepPhysics(0.001);
   
   /* update position and orienation of the scene objects
    * apply forces back to the devices
    */
-  
   for (Block* block : blocks)
     block->update();
   
@@ -212,8 +243,10 @@ void Game::gameLoop()
     
     cVector3d position;
     hand->getPosition(position);
+    position *= scale;
+    
     force = cursor->getPosition() - position;
-    force *= 100;
+    force *= 100 / scale;
     
     hand->setForceAndTorqueAndGripperForce(force, torque, gripperForce);
   }
@@ -221,7 +254,11 @@ void Game::gameLoop()
 
 void Game::renderLoop(int width, int height)
 {
+  // update shadow maps (if any)
+  world->updateShadowMaps(false, camera->getMirrorVertical());
   
+  // render world
+  camera->renderView(width, height);
 }
 
 

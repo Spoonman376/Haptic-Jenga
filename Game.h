@@ -27,7 +27,8 @@ private:
   bool lock;
   bool gameRunning;
   bool interactionEnabled;
-  int levels = 5;
+  const int levels = 5;
+  const double scale = 4.0;
   
   void checkEnableInteraction();
   void testScene();
@@ -35,10 +36,11 @@ private:
 public:
   cWorld* world;
   cCamera* camera;
+  cSpotLight* light;
   
   cVector3d cameraLookAt;
   
-  Game(vector<cGenericHapticDevicePtr>, cWorld*);
+  Game(vector<cGenericHapticDevicePtr>);
   ~Game();
   
   void start();

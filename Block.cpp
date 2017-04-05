@@ -2,18 +2,30 @@
 #include <stdio.h>
 #include "Block.h"
 
-Block::Block()
+Block::Block(double s)
 {
+  dimX *= s;
+  dimY *= s;
+  dimZ *= s;
+  
+//  blockFrame = new cShapeBox(dimX, dimY, dimZ);
+//  
+//  blockFrame->m_texture = cTexture2d::create();
+//  if (!blockFrame->m_texture->loadFromFile("woodTexture.jpg"))
+//    cout << "texture load failed" << endl;
+//  blockFrame->setUseTexture(true);
+
+  
   blockFrame = new cGenericObject();
   
-  blockFrame->addChild(createWall(dimX, dimY, cVector3d(0.0, 0.0, dimZ / 2.0), cVector3d(0.0, 0.0, 1.0), 0.0));
-  blockFrame->addChild(createWall(dimX, dimY, cVector3d(0.0, 0.0, -dimZ / 2.0), cVector3d(0.0, 0.0, 1.0), 0.0));
+  blockFrame->addChild(createWall(dimX, dimY, cVector3d(0.0, 0.0, dimZ / 2.0), cVector3d(0.0, 0.0, 1.0), 0));
+  blockFrame->addChild(createWall(dimX, dimY, cVector3d(0.0, 0.0, -dimZ / 2.0), cVector3d(1.0, 0.0, 0.0), M_PI));
 
   blockFrame->addChild(createWall(dimZ, dimY, cVector3d(dimX / 2.0, 0.0, 0.0), cVector3d(0.0, 1.0, 0.0), M_PI/2));
   blockFrame->addChild(createWall(dimZ, dimY, cVector3d(-dimX / 2.0, 0.0, 0.0), cVector3d(0.0, 1.0, 0.0), -M_PI/2));
 
-  blockFrame->addChild(createWall(dimX, dimZ, cVector3d(0.0, dimY / 2.0, 0.0), cVector3d(1.0, 0.0, 0.0), M_PI/2));
-  blockFrame->addChild(createWall(dimX, dimZ, cVector3d(0.0, -dimY / 2.0, 0.0), cVector3d(1.0, 0.0, 0.0), -M_PI/2));
+  blockFrame->addChild(createWall(dimX, dimZ, cVector3d(0.0, dimY / 2.0, 0.0), cVector3d(1.0, 0.0, 0.0), -M_PI/2));
+  blockFrame->addChild(createWall(dimX, dimZ, cVector3d(0.0, -dimY / 2.0, 0.0), cVector3d(1.0, 0.0, 0.0), M_PI/2));
   
   
   physXBlock = nullptr;

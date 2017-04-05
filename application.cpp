@@ -28,7 +28,7 @@ using namespace std;
 cStereoMode stereoMode = C_STEREO_DISABLED;
 
 // fullscreen mode
-bool fullscreen = false;
+bool fullscreen = true;
 
 // mirrored display
 bool mirroredDisplay = false;
@@ -37,39 +37,16 @@ bool mirroredDisplay = false;
 // DECLARED VARIABLES
 //------------------------------------------------------------------------------
 
-// a world that contains all objects of the virtual environment
-cWorld* world;
-
-// a camera to render the world in the window display
-cCamera* camera;
 double mouseOldX;
 double mouseOldY;
 
 Game* game;
 
-// a light source to illuminate the objects in the world
-cDirectionalLight *light;
-
 // a haptic device handler
 cHapticDeviceHandler* handler;
 
-// a pointer to the current haptic device
-
-//vector<SphereTool*> cursors;
-//
-//SphereTool* cursorLeft;
-//SphereTool* cursorRight;
-
 // a label to display the rates [Hz] at which the simulation is running
 cLabel* labelRates;
-
-// a small sphere (cursorRight) representing the haptic device 
-
-//Block* block;
-//Block* block2;
-//
-//Wall* floorWall;
-//PhysXMain* physics;
 
 // flag to indicate if the haptic simulation currently running
 bool simulationRunning = false;
@@ -166,6 +143,7 @@ int main(int argc, char* argv[])
   glfwSetErrorCallback(errorCallback);
 
   // compute desired size of window
+  GLFWmonitor* monitor = glfwGetPrimaryMonitor();
   const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
   int w = 0.8 * mode->height;
   int h = 0.5 * mode->height;
@@ -219,6 +197,7 @@ int main(int argc, char* argv[])
   glfwMakeContextCurrent(window);
 
   // sets the swap interval for the current display context
+  glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
   glfwSwapInterval(swapInterval);
 
 #ifdef GLEW_VERSION
@@ -230,51 +209,6 @@ int main(int argc, char* argv[])
       return 1;
   }
 #endif
-
-
-  //--------------------------------------------------------------------------
-  // WORLD - CAMERA - LIGHTING
-  //--------------------------------------------------------------------------
-
-  // create a new world.
-  world = new cWorld();
-
-  // set the background color of the environment
-  world->m_backgroundColor.setBlack();
-
-  // create a camera and insert it into the virtual world
-  camera = new cCamera(world);
-  world->addChild(camera);
-
-  // position and orient the camera
-  camera->set( cVector3d (0.15, 0.0, 0.05),    // camera position (eye)
-               cVector3d (0.0, 0.0, 0.0),    // look at position (target)
-               cVector3d (0.0, 0.0, 1.0));   // direction of the (up) vector
-
-  // set the near and far clipping planes of the camera
-  camera->setClippingPlanes(0.01, 10.0);
-
-  // set stereo mode
-  camera->setStereoMode(stereoMode);
-
-  // set stereo eye separation and focal length (applies only if stereo is enabled)
-  camera->setStereoEyeSeparation(0.01);
-  camera->setStereoFocalLength(0.5);
-
-  // set vertical mirrored display mode
-  camera->setMirrorVertical(mirroredDisplay);
-
-  // create a directional light source
-  light = new cDirectionalLight(world);
-  
-  // insert light source inside world
-  world->addChild(light);
-
-  // enable light source
-  light->setEnabled(true);
-
-  // define direction of light beam
-  light->setDir(-1.0, 0.0, -10.5);
 
   //--------------------------------------------------------------------------
   // HAPTIC DEVICE
@@ -297,7 +231,7 @@ int main(int argc, char* argv[])
   if(handler->getDevice(leftHand, 1))
     hands.push_back(leftHand);
   
-  game = new Game(hands, world);
+  game = new Game(hands);
 
   //--------------------------------------------------------------------------
   // WIDGETS
@@ -309,8 +243,7 @@ int main(int argc, char* argv[])
   // create a label to display the haptic and graphic rates of the simulation
   labelRates = new cLabel(font);
   labelRates->m_fontColor.setWhite();
-  camera->m_frontLayer->addChild(labelRates);
-
+  game->camera->m_frontLayer->addChild(labelRates);
 
   //--------------------------------------------------------------------------
   // START SIMULATION
@@ -381,15 +314,15 @@ void errorCallback(int a_error, const char* a_description)
 
 void scrollCallback(GLFWwindow* window, double x, double y)
 {
-  double azu = camera->getSphericalAzimuthRad();
-  double alt = camera->getSphericalPolarRad();
-  double r = camera->getSphericalRadius();
+  double azu = game->camera->getSphericalAzimuthRad();
+  double alt = game->camera->getSphericalPolarRad();
+  double r = game->camera->getSphericalRadius();
   
   r = (y > 0) ? r - 0.05 : r + 0.05;
   r = (r < 0.05) ? 0.05 : r;
-  camera->setSphericalRadius(r);
-  camera->setSphericalAzimuthRad(azu);
-  camera->setSphericalPolarRad(alt);
+  game->camera->setSphericalRadius(r);
+  game->camera->setSphericalAzimuthRad(azu);
+  game->camera->setSphericalPolarRad(alt);
 }
 
 
@@ -415,13 +348,13 @@ void motion(GLFWwindow* window, double x, double y)
   
   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
   {
-    double azu = camera->getSphericalAzimuthRad();
-    double alt = camera->getSphericalPolarRad();
-    double r = camera->getSphericalRadius();
+    double azu = game->camera->getSphericalAzimuthRad();
+    double alt = game->camera->getSphericalPolarRad();
+    double r = game->camera->getSphericalRadius();
     
-    camera->setSphericalAzimuthRad(azu - dx * 0.0025);
-    camera->setSphericalPolarRad(alt - dy * 0.0025);
-    camera->setSphericalRadius(r);
+    game->camera->setSphericalAzimuthRad(azu - dx * 0.0025);
+    game->camera->setSphericalPolarRad(alt - dy * 0.0025);
+    game->camera->setSphericalRadius(r);
   }
 }
 
@@ -473,7 +406,7 @@ void keyCallback(GLFWwindow* a_window, int a_key, int a_scancode, int a_action, 
   else if (a_key == GLFW_KEY_M)
   {
       mirroredDisplay = !mirroredDisplay;
-      camera->setMirrorVertical(mirroredDisplay);
+      game->camera->setMirrorVertical(mirroredDisplay);
   }
   else if (a_key == GLFW_KEY_R)
   {
@@ -492,14 +425,10 @@ void close(void)
   // wait for graphics and haptics loops to terminate
   while (!simulationFinished) { cSleepMs(100); }
 
-  // close haptic device
-//  for (cGenericHapticDevicePtr hand : hands)
-//    hand->close();
   delete game;
   
   // delete resources
   delete hapticsThread;
-  delete world;
   delete handler;
 }
 
@@ -518,19 +447,12 @@ void updateGraphics(void)
   // update position of label
   labelRates->setLocalPos((int)(0.5 * (width - labelRates->getWidth())), 15);
 
-
   /////////////////////////////////////////////////////////////////////
   // RENDER SCENE
   /////////////////////////////////////////////////////////////////////
 
   game->renderLoop(width, height);
   
-  // update shadow maps (if any)
-  world->updateShadowMaps(false, mirroredDisplay);
-
-  // render world
-  camera->renderView(width, height);
-
   // wait until all GL commands are completed
   glFinish();
 
