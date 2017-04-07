@@ -2,20 +2,15 @@
 #include <stdio.h>
 #include "Block.h"
 
+
+double Block::scale = 0.5;
+double Block::dimX = 0.025 * scale;
+double Block::dimY = 0.075 * scale;
+double Block::dimZ = 0.015 * scale;
+
+
 Block::Block(double s)
 {
-  dimX *= s;
-  dimY *= s;
-  dimZ *= s;
-  
-//  blockFrame = new cShapeBox(dimX, dimY, dimZ);
-//  
-//  blockFrame->m_texture = cTexture2d::create();
-//  if (!blockFrame->m_texture->loadFromFile("woodTexture.jpg"))
-//    cout << "texture load failed" << endl;
-//  blockFrame->setUseTexture(true);
-
-  
   blockFrame = new cGenericObject();
   
   blockFrame->addChild(createWall(dimX, dimY, cVector3d(0.0, 0.0, dimZ / 2.0), cVector3d(0.0, 0.0, 1.0), 0));
@@ -79,8 +74,6 @@ void Block::setPosition(cVector3d pos)
   }
 }
 
-
-
 void Block::setRotation(cMatrix3d rot)
 {
   blockFrame->setLocalRot(rot);
@@ -99,7 +92,7 @@ void Block::setRotation(cMatrix3d rot)
 }
 
 
-void Block::enableInteraction()
+void Block::enableInteraction(bool b)
 {
   PxU32 numShapes = physXBlock->getNbShapes();
   
@@ -112,33 +105,12 @@ void Block::enableInteraction()
   {
     PxShape* shape = shapes[i];
     PxFilterData filterData;
-    filterData.word0 = filter::BLOCK; // word0 = own ID
-    filterData.word1 = filter::BLOCK | filter::PLANE | filter::CURSOR;
+    filterData.word0 = BLOCK; // word0 = own ID
+    filterData.word1 = b ? CURSOR | PLANE | BLOCK : BLOCK | PLANE;
     
     shape->setSimulationFilterData(filterData);
   }
 }
-
-void Block::disableInteraction()
-{
-  PxU32 numShapes = physXBlock->getNbShapes();
-  
-  PxShape** shapes;
-  shapes = new PxShape*[numShapes];
-  
-  physXBlock->getShapes(shapes, numShapes);
-  
-  for (int i = 0; i < numShapes; ++i)
-  {
-    PxShape* shape = shapes[i];
-    PxFilterData filterData;
-    filterData.word0 = filter::BLOCK; // word0 = own ID
-    filterData.word1 = filter::BLOCK | filter::PLANE | filter::CURSOR;
-    
-    shape->setSimulationFilterData(filterData);
-  }
-}
-
 
 
 void Block::addToWorld(cWorld* world)

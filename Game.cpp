@@ -12,7 +12,7 @@ Game::Game(vector<cGenericHapticDevicePtr> devicePtrs)
   camera = new cCamera(world);
   world->addChild(camera);
   
-  camera->setSphericalRad(0.2, M_PI / 3.0, 0);
+  camera->setSphericalRad(0.5, M_PI / 3.0, 0);
   
   // set the near and far clipping planes of the camera
   camera->setClippingPlanes(0.01, 10.0);
@@ -31,10 +31,10 @@ Game::Game(vector<cGenericHapticDevicePtr> devicePtrs)
   light->m_shadowMap->setCamera(camera);
   
   // define direction of light beam
-  light->setLocalPos(cVector3d(0.5, 0.5, 0.5));
-  light->setDir(-1.0, -0.5, -1.5);
+  light->setLocalPos(cVector3d(0.5, 0.5, 1.5) * 2.5);
+  light->setDir(-0.5, -0.5, -1.5);
   light->setSpotExponent(0.001);
-  
+  light->setCutOffAngleDeg(5);
   
   hands = devicePtrs;
     
@@ -44,34 +44,30 @@ Game::Game(vector<cGenericHapticDevicePtr> devicePtrs)
     hand->calibrate();
     
     // create the cursor to go along with the device
-    SphereTool* cursor = new SphereTool();
+    SphereTool* cursor = new SphereTool(hand, scale);
     cursor->addToWorld(world);
     cursors.push_back(cursor);
     
-    cHapticDeviceInfo info = hand->getSpecifications();
-    
-    if (info.m_sensedRotation == true)
-      cursor->setUp();
-    
-    hand->setEnableGripperUserSwitch(true);
-    
-    cVector3d pos;
-    hand->getPosition(pos);
-    cursor->setPosition(pos);
     physics.initSphere(cursor);
   }
   
   //create 9 blocks
-  for (int i = 0; i < (levels * 3); ++i)
-//  for (int i = 0; i < 2; ++ i)
+  Block::dimX *= scale;
+  Block::dimY *= scale;
+  Block::dimZ *= scale;
+  
+//  for (int i = 0; i < (levels * 3); ++i)
+  for (int i = 0; i < 2; ++ i)
   {
     Block* b = new Block(scale);
     blocks.push_back(b);
-    physics.initBlock(b);
     b->addToWorld(world);
   }
   
-  Wall* floor = new Wall(1.0, 1.0, cVector3d(0.0, 0.0, 0.0), cVector3d(0.0, 0.0, 1.0), 0.0, "tiles.jpg");
+  physics.initBlock(blocks);
+
+  
+  Wall* floor = new Wall(0.5, 0.5, cVector3d(0.0, 0.0, 0.0), cVector3d(0.0, 0.0, 1.0), 0.0, "tiles.jpg");
   floor->addToWorld(world);
   physics.initWall(floor);
 }
@@ -108,8 +104,8 @@ void Game::testScene()
   Block* b2 = blocks[1];
   cMatrix3d rotation = cMatrix3d(cVector3d(0, 0, 1),  M_PI_2);
 
-  b1->setPosition(rotation * cVector3d(-b1->dimX * 1.02, 0, (2) * b1->dimZ * 1.1));
-  b2->setPosition(           cVector3d( b1->dimX * 1.90, 0, (1) * b2->dimZ * 1.1));
+  b1->setPosition(cVector3d(0.02, 0, 0.075));
+  b2->setPosition(cVector3d(-0.02, 0, 0.025));
 
   b1->setRotation(rotation);
   b2->setRotation(cMatrix3d(cVector3d(0, 0, 1),  0));
@@ -125,51 +121,40 @@ void Game::reset()
   timer.stop();
   timer.reset();
   
-//  testScene();
+  testScene();
   
-  for (int i = 0; i < levels; ++i)
-  {
-    Block* b1 = blocks[(i * 3)];
-    Block* b2 = blocks[(i * 3) + 1];
-    Block* b3 = blocks[(i * 3) + 2];
-    
-    cMatrix3d rotation = cMatrix3d(cVector3d(0, 0, 1), (i % 4) * M_PI_2);
-    
-    b1->setPosition(rotation * cVector3d(-b1->dimX * 1.02, 0, (i + 1) * b1->dimZ * 1.1));
-    b2->setPosition(           cVector3d(0,                0, (i + 1) * b2->dimZ * 1.1));
-    b3->setPosition(rotation * cVector3d(b3->dimX * 1.02,  0, (i + 1) * b2->dimZ * 1.1));
-    
-    b1->setRotation(rotation);
-    b2->setRotation(rotation);
-    b3->setRotation(rotation);
-  }
+//  for (int i = 0; i < levels; ++i)
+//  {
+//    Block* b1 = blocks[(i * 3)];
+//    Block* b2 = blocks[(i * 3) + 1];
+//    Block* b3 = blocks[(i * 3) + 2];
+//    
+//    cMatrix3d rotation = cMatrix3d(cVector3d(0, 0, 1), (i % 4) * M_PI_2);
+//    
+//    b1->setPosition(rotation * cVector3d(-b1->dimX * 1.02, 0, (i + 1) * b1->dimZ * 1.1));
+//    b2->setPosition(           cVector3d(0,                0, (i + 1) * b2->dimZ * 1.1));
+//    b3->setPosition(rotation * cVector3d(b3->dimX * 1.02,  0, (i + 1) * b2->dimZ * 1.1));
+//    
+//    b1->setRotation(rotation);
+//    b2->setRotation(rotation);
+//    b3->setRotation(rotation);
+//  }
   
-  disableInteraction();
+  enableInteraction(false);
   
   gameRunning = true;
   timer.start();
 }
 
-void Game::enableInteraction()
+void Game::enableInteraction(bool b)
 {
   for (SphereTool* cursor : cursors)
-    cursor->enableInteraction();
+    cursor->enableInteraction(b);
   
   for (Block* block : blocks)
-    block->enableInteraction();
+    block->enableInteraction(b);
   
-  interactionEnabled = true;
-}
-
-void Game::disableInteraction()
-{
-  for (SphereTool* cursor : cursors)
-    cursor->disableInteraction();
-  
-  for (Block* block : blocks)
-    block->disableInteraction();
-  
-  interactionEnabled = false;
+  interactionEnabled = b;
 }
 
 void Game::checkEnableInteraction()
@@ -184,7 +169,7 @@ void Game::checkEnableInteraction()
   }
   
   if (enable)
-    enableInteraction();
+    enableInteraction(true);
 }
 
 void Game::gameLoop()
@@ -209,14 +194,7 @@ void Game::gameLoop()
     cGenericHapticDevicePtr hand = hands[i];
     SphereTool* cursor = cursors[i];
     
-    cVector3d position;
-    hand->getPosition(position);
-    position *= scale;
-    
-    cVector3d force = position - cursor->getPosition();
-    force *= 100.0 / scale;
-    
-    cursor->applyForce(force);
+    cursor->applyForce();
   }
     
   while(timer.getCurrentTimeSeconds() < 0.001);
@@ -241,14 +219,7 @@ void Game::gameLoop()
     
     cursor->update();
     
-    cVector3d position;
-    hand->getPosition(position);
-    position *= scale;
-    
-    force = cursor->getPosition() - position;
-    force *= 100 / scale;
-    
-    hand->setForceAndTorqueAndGripperForce(force, torque, gripperForce);
+    cursor->applyForceToDevice(scale);
   }
 }
 

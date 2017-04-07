@@ -3,9 +3,13 @@
 
 #include "Tool.h"
 
-Tool::Tool()
+Tool::Tool(cGenericHapticDevicePtr d, double s)
 {
+  device = d;
   
+  mass = 0.1;
+  springConstant = 1000.0 / s;
+  scale = s;
 }
 
 Tool::~Tool()
@@ -42,6 +46,11 @@ void Tool::addToWorld(cWorld* world)
   world->addChild(root);
 }
 
+cMesh* Tool::getMesh()
+{
+  return root;
+}
+
 void Tool::addReferenceFrames()
 {
   root->setShowFrame(true, true);
@@ -51,6 +60,11 @@ void Tool::addReferenceFrames()
 void Tool::addActor(PxRigidDynamic* actor)
 {
   physXTools.push_back(actor);
+}
+
+void Tool::setRootActor(PxRigidDynamic* actor)
+{
+  physXRoot = actor;
 }
 
 void Tool::enableInteraction(bool b)
@@ -75,7 +89,6 @@ void Tool::enableInteraction(bool b)
     }
   }
 }
-
 
 void Tool::applyForce(cVector3d force)
 {

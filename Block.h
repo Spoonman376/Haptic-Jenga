@@ -12,23 +12,19 @@ class Block
 private:
   // chai3d Object
   cGenericObject* blockFrame;
-
-  // PhysX Object
+  PxRigidDynamic* physXBlock;
   
   cMesh* createWall(double width, double height, cVector3d pos, cVector3d axis, double angle);
   
-  double scale = 0.5;
   
 public:
   Block(double s);
   ~Block();
   
-  PxRigidDynamic* physXBlock;
-
-  
-  double dimX = 0.025 * scale;
-  double dimY = 0.075 * scale;
-  double dimZ = 0.015 * scale;
+  static double scale;
+  static double dimX;
+  static double dimY;
+  static double dimZ;
   
   cVector3d getPosition();
   cMatrix3d getRotation();
@@ -36,8 +32,7 @@ public:
   void setPosition(cVector3d);
   void setRotation(cMatrix3d);
   
-  void enableInteraction();
-  void disableInteraction();
+  void enableInteraction(bool);
   
   void addToWorld(cWorld* world);
   void setActor(PxRigidDynamic* b);

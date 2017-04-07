@@ -10,31 +10,38 @@
 class Tool
 {
 protected:
-  cGenericObject* root;
+  cMesh* root;
+  PxRigidDynamic* physXRoot;
+  
+  cGenericHapticDevicePtr device;
   
   // Might want to ensure that these vectors are the same length
-  vector<cShapeSphere*> tools;
+  vector<cMesh*> tools;
   vector<PxRigidDynamic*> physXTools;
   
 public:
   
-  Tool();
+  Tool(cGenericHapticDevicePtr, double scale);
   ~Tool();
   
-  const double mass = 0.1;
-  
+  double mass;
+  double springConstant;
+  double scale;
+
   void addToWorld(cWorld*);
   void addReferenceFrames();
   
   void addActor(PxRigidDynamic*);
+  void setRootActor(PxRigidDynamic*);
   
   // These set the postions of the
   void setPosition(cVector3d pos);
   void setRotation(cMatrix3d rot);
   
   virtual void update();
+  virtual void enableInteraction(bool);
   
-  void enableInteraction(bool);
+  cMesh* getMesh();
 
   // Applies a the force to all the physxtools
   void applyForce(cVector3d force);

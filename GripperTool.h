@@ -14,7 +14,9 @@ class GripperTool : public Tool
 private:
   
 public:
-  GripperTool();
+  bool gripMode = false;
+  
+  GripperTool(cGenericHapticDevicePtr, double s);
   ~GripperTool();
   
   void grip();

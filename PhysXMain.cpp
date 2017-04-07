@@ -18,6 +18,8 @@ PhysXMain::PhysXMain()
   sceneDesc.filterShader = JengaFilterShader;
   sceneDesc.contactModifyCallback = new ContactModifyCallback(this);
   
+  gCooking = PxCreateCooking(PX_PHYSICS_VERSION, *gFoundation, PxCookingParams(PxTolerancesScale()));
+  
   gScene = gPhysics->createScene(sceneDesc);
   
   //static friction, dynamic friction, restitution
@@ -30,44 +32,80 @@ PhysXMain::~PhysXMain()
   gDispatcher->release();
   gPhysics->getProfileZoneManager()->release();
   gPhysics->release();
+  gCooking->release();
   gFoundation->release();
   
   printf("PhysX done.\n");
 }
 
 
-void PhysXMain::initBlock(Block* b)
+void PhysXMain::initBlock(vector<Block*> &blocks)
 {
-  PxShape* shape = gPhysics->createShape(PxBoxGeometry(b->dimX / 2.0, b->dimY / 2.0, b->dimZ / 2.0), *gMaterial);
+  PxShape* shape = gPhysics->createShape(PxBoxGeometry(Block::dimX / 2.0, Block::dimY / 2.0, Block::dimZ / 2.0), *gMaterial);
   
   shape->setContactOffset(contactOffset);
   
-  cVector3d pos = b->getPosition();
+  for (Block* b : blocks)
+  {
+    cVector3d pos = b->getPosition();
     
-  cVector3d axis;
-  double angle;
-  b->getRotation().toAxisAngle(axis, angle);
-  
-  PxTransform trans = PxTransform(PxVec3(pos.x(), pos.y(), pos.z()), PxQuat(angle, PxVec3(axis.x(), axis.y(), axis.z())));
-  
-  PxRigidDynamic *body = gPhysics->createRigidDynamic(trans);
-  body->attachShape(*shape);
-  
-  PxRigidBodyExt::updateMassAndInertia(*body, 15000.0);
-  
-  body->setLinearDamping(1.0);
-  body->setAngularDamping(1.0);
-
-  b->setActor(body);
-  
-  gScene->addActor(*body);
-  objectMap.insert(make_pair(body, b));
+    cVector3d axis;
+    double angle;
+    b->getRotation().toAxisAngle(axis, angle);
+    
+    PxTransform trans = PxTransform(PxVec3(pos.x(), pos.y(), pos.z()), PxQuat(angle, PxVec3(axis.x(), axis.y(), axis.z())));
+    
+    PxRigidDynamic *body = gPhysics->createRigidDynamic(trans);
+    body->attachShape(*shape);
+    
+    PxRigidBodyExt::updateMassAndInertia(*body, 15000.0);
+    
+    body->setLinearDamping(1.0);
+    body->setAngularDamping(1.0);
+    
+    b->setActor(body);
+    
+    gScene->addActor(*body);
+    objectMap.insert(make_pair(body, b));
+  }
 }
 
+PxConvexMesh* PhysXMain::initConvexMesh(cMesh* mesh)
+{
+  PxConvexMeshDesc meshDesc;
+  
+  vector<PxVec3> verts;
+  vector<PxU32> indices;
+  
+  vector<PxHullPolygon> polys;
+    
+  for (int i = 0; i < mesh->m_triangles->m_vertices->getNumElements(); i++) {
+    cVector3d p = mesh->m_triangles->m_vertices->m_localPos[i];
+    verts.push_back(PxVec3(p.x(), p.y(), p.z()));
+  }
+  for (int i = 0; i < mesh->getNumTriangles(); i++)
+  {
+    indices.push_back(mesh->m_triangles->getVertexIndex0(i));
+    indices.push_back(mesh->m_triangles->getVertexIndex1(i));
+    indices.push_back(mesh->m_triangles->getVertexIndex2(i));
+  }
+  
+  meshDesc.points.count = verts.size();
+  meshDesc.points.stride = sizeof(PxVec3);
+  meshDesc.points.data = &verts[0];
+  meshDesc.flags = PxConvexFlag::eCOMPUTE_CONVEX;
+
+  
+  PxDefaultMemoryOutputStream writeBuffer;
+  if (!gCooking->cookConvexMesh(meshDesc, writeBuffer))
+    return NULL;
+  PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
+  return gPhysics->createConvexMesh(readBuffer);
+}
 
 void PhysXMain::initSphere(SphereTool *s)
 {
-  PxShape* shape = gPhysics->createShape(PxSphereGeometry(s->radius), *gMaterial);
+  PxShape* shape = gPhysics->createShape(PxConvexMeshGeometry(initConvexMesh(s->getMesh())), *gMaterial);
   shape->setContactOffset(contactOffset);
   
   cVector3d pos = s->getPosition();
@@ -75,15 +113,15 @@ void PhysXMain::initSphere(SphereTool *s)
   PxRigidDynamic *body = gPhysics->createRigidDynamic(PxTransform(PxVec3(pos.x(), pos.y(), pos.z())));
   
   
-//  body->setMass(s->mass);
-  
   body->attachShape(*shape);
+  
+  PxRigidBodyExt::updateMassAndInertia(*body, 15000.0);
   body->setLinearDamping(1.0);
   body->setAngularDamping(1.0);
   
   body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
   
-  s->setActor(body);
+  s->setRootActor(body);
   
   gScene->addActor(*body);
   toolMap.insert(make_pair(body, s));

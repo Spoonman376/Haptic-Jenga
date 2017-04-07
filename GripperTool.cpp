@@ -4,7 +4,7 @@
 #include "GripperTool.h"
 
 
-GripperTool::GripperTool()
+GripperTool::GripperTool(cGenericHapticDevicePtr d, double s) : Tool(d, s)
 {
   
 }

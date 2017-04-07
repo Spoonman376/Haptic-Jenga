@@ -12,6 +12,7 @@
 
 #include "Block.h"
 #include "SphereTool.h"
+#include "Tool.h"
 #include "Wall.h"
 #include "ContactModifyCallback.h"
 
@@ -31,18 +32,20 @@ private:
   PxScene*				            gScene = NULL;
   PxMaterial*				          gMaterial = NULL;
   PxBatchQuery*			          gBatchQuery = NULL;
+  PxCooking*                  gCooking = NULL;
   
+  PxConvexMesh* initConvexMesh(cMesh* mesh);
   
 public:
   PhysXMain();
   ~PhysXMain();
     
-  const double gravity = -9.81 * 0.002;
-  const double contactOffset = 0.0005;
+  const double gravity = -9.81 * 0.01;
+  const double contactOffset = 0.002;
   
   void collisionFunction(PxContactModifyPair* const, PxU32);
   
-  void initBlock(Block* b);
+  void initBlock(vector<Block*> &b);
   void initSphere(SphereTool* s);
   void initWall(Wall* w);
   

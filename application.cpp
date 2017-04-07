@@ -1,6 +1,6 @@
 //==============================================================================
 /*
-    \author    Your Name
+    \author    Erik Spooner
 */
 //==============================================================================
 
@@ -188,7 +188,6 @@ int main(int argc, char* argv[])
   glfwSetCursorPosCallback(window, motion);
   
   glfwSetScrollCallback(window, scrollCallback);
-  
   
   // set resize callback
   glfwSetWindowSizeCallback(window, windowSizeCallback);

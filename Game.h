@@ -50,8 +50,7 @@ public:
   void renderLoop(int width, int height);
   
   
-  void enableInteraction();
-  void disableInteraction();
+  void enableInteraction(bool);
 };
 
 #endif /* Game_h */
