@@ -56,8 +56,8 @@ Game::Game(vector<cGenericHapticDevicePtr> devicePtrs)
   Block::dimY *= scale;
   Block::dimZ *= scale;
   
-//  for (int i = 0; i < (levels * 3); ++i)
-  for (int i = 0; i < 2; ++ i)
+  for (int i = 0; i < (levels * 3); ++i)
+//  for (int i = 0; i < 2; ++ i)
   {
     Block* b = new Block(scale);
     blocks.push_back(b);
@@ -121,24 +121,24 @@ void Game::reset()
   timer.stop();
   timer.reset();
   
-  testScene();
+//  testScene();
   
-//  for (int i = 0; i < levels; ++i)
-//  {
-//    Block* b1 = blocks[(i * 3)];
-//    Block* b2 = blocks[(i * 3) + 1];
-//    Block* b3 = blocks[(i * 3) + 2];
-//    
-//    cMatrix3d rotation = cMatrix3d(cVector3d(0, 0, 1), (i % 4) * M_PI_2);
-//    
-//    b1->setPosition(rotation * cVector3d(-b1->dimX * 1.02, 0, (i + 1) * b1->dimZ * 1.1));
-//    b2->setPosition(           cVector3d(0,                0, (i + 1) * b2->dimZ * 1.1));
-//    b3->setPosition(rotation * cVector3d(b3->dimX * 1.02,  0, (i + 1) * b2->dimZ * 1.1));
-//    
-//    b1->setRotation(rotation);
-//    b2->setRotation(rotation);
-//    b3->setRotation(rotation);
-//  }
+  for (int i = 0; i < levels; ++i)
+  {
+    Block* b1 = blocks[(i * 3)];
+    Block* b2 = blocks[(i * 3) + 1];
+    Block* b3 = blocks[(i * 3) + 2];
+    
+    cMatrix3d rotation = cMatrix3d(cVector3d(0, 0, 1), (i % 4) * M_PI_2);
+    
+    b1->setPosition(rotation * cVector3d(-b1->dimX * 1.02, 0, (i + 1) * b1->dimZ * 1.1));
+    b2->setPosition(           cVector3d(0,                0, (i + 1) * b2->dimZ * 1.1));
+    b3->setPosition(rotation * cVector3d(b3->dimX * 1.02,  0, (i + 1) * b2->dimZ * 1.1));
+    
+    b1->setRotation(rotation);
+    b2->setRotation(rotation);
+    b3->setRotation(rotation);
+  }
   
   enableInteraction(false);
   
@@ -197,8 +197,8 @@ void Game::gameLoop()
     cursor->applyForce();
   }
     
-  while(timer.getCurrentTimeSeconds() < 0.001);
-  timer.reset();
+//  while(timer.getCurrentTimeSeconds() < 0.001);
+//  timer.reset();
   
   physics.stepPhysics(0.001);
   
@@ -213,13 +213,9 @@ void Game::gameLoop()
     cGenericHapticDevicePtr hand = hands[i];
     SphereTool* cursor = cursors[i];
     
-    cVector3d force(0, 0, 0);
-    cVector3d torque(0, 0, 0);
-    double gripperForce = 0.0;
-    
     cursor->update();
     
-    cursor->applyForceToDevice(scale);
+    cursor->applyForceToDevice();
   }
 }
 

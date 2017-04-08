@@ -34,6 +34,8 @@ void SphereTool::update()
 
 void SphereTool::enableInteraction(bool b)
 {
+  b ? root->m_material->setRedFireBrick() : root->m_material->setWhite();
+  
   PxU32 numShapes = physXRoot->getNbShapes();
   
   PxShape** shapes;
@@ -51,58 +53,6 @@ void SphereTool::enableInteraction(bool b)
     shape->setSimulationFilterData(filterData);
   }
 }
-
-cVector3d SphereTool::getPosition()
-{
-  return root->getLocalPos();
-}
-
-void SphereTool::setPosition(cVector3d pos)
-{
-  root->setLocalPos(pos);
-  
-  if (physXRoot != nullptr)
-  {
-    PxTransform trans = physXRoot->getGlobalPose();
-    trans.p = PxVec3(pos.x(), pos.y(), pos.z());
-    physXRoot->setGlobalPose(trans);
-    
-    physXRoot->clearForce();
-    physXRoot->clearTorque();
-    physXRoot->setLinearVelocity(PxVec3(0,0,0));
-    physXRoot->setAngularVelocity(PxVec3(0,0,0));
-  }
-}
-
-
-void SphereTool::applyForceToDevice(double scale)
-{
-  cVector3d force(0, 0, 0);
-  
-  cVector3d position;
-  device->getPosition(position);
-  position *= scale;
-  
-  force = getPosition() - position;
-  force *= springConstant;
-  
-  device->setForceAndTorqueAndGripperForce(force, cVector3d(), 0.0);
-}
-
-void SphereTool::applyForce()
-{
-  cVector3d position;
-  device->getPosition(position);
-  position *= scale;
-  
-  cVector3d force = position - getPosition();
-  force *= springConstant;
-  
-  PxVec3 f = PxVec3(force.x(), force.y(), force.z());
-  physXRoot->addForce(f);
-}
-
-
 
 
 

@@ -12,7 +12,7 @@
 
 #include "Block.h"
 #include "SphereTool.h"
-#include "Tool.h"
+#include "GripperTool.h"
 #include "Wall.h"
 #include "ContactModifyCallback.h"
 
@@ -45,6 +45,7 @@ public:
   
   void collisionFunction(PxContactModifyPair* const, PxU32);
   
+  void initGripper(GripperTool* g);
   void initBlock(vector<Block*> &b);
   void initSphere(SphereTool* s);
   void initWall(Wall* w);

@@ -13,13 +13,23 @@ class GripperTool : public Tool
 {
 private:
   
+  
 public:
   bool gripMode = false;
+  double maxdistance = 1.0;
+  double mindistance = 0.2;
+  double distance = 1.0;
+  double rotation = 0.0;
   
   GripperTool(cGenericHapticDevicePtr, double s);
   ~GripperTool();
+
+  void update();
+  void enableInteraction(bool);
   
-  void grip();
+  // Applies a the force to all the physxtools
+  //void applyForceToDevice();
+  void applyForce();
 };
 
 

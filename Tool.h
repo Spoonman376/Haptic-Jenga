@@ -6,20 +6,20 @@
 
 #include <stdio.h>
 #include "PhysXUtilities.h"
+#include "Spring.h"
 
 class Tool
 {
 protected:
-  cMesh* root;
-  PxRigidDynamic* physXRoot;
-  
   cGenericHapticDevicePtr device;
   
-  // Might want to ensure that these vectors are the same length
+public:
+  cMesh* root;
+  PxRigidDynamic* physXRoot;
+
   vector<cMesh*> tools;
   vector<PxRigidDynamic*> physXTools;
-  
-public:
+  vector<Spring*> springs;
   
   Tool(cGenericHapticDevicePtr, double scale);
   ~Tool();
@@ -34,6 +34,8 @@ public:
   void addActor(PxRigidDynamic*);
   void setRootActor(PxRigidDynamic*);
   
+  cVector3d getPosition();
+  
   // These set the postions of the
   void setPosition(cVector3d pos);
   void setRotation(cMatrix3d rot);
@@ -41,10 +43,9 @@ public:
   virtual void update();
   virtual void enableInteraction(bool);
   
-  cMesh* getMesh();
-
   // Applies a the force to all the physxtools
-  void applyForce(cVector3d force);
+  virtual void applyForceToDevice();
+  virtual void applyForce();
 };
 
 #endif /* Tool_h */

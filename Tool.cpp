@@ -16,12 +16,32 @@ Tool::~Tool()
 {
   root->removeFromGraph();
   root->deleteAllChildren();
+  
+  for (Spring* spring : springs)
+    delete spring;
 }
 
+
+cVector3d Tool::getPosition()
+{
+  return root->getLocalPos();
+}
 
 void Tool::setPosition(cVector3d pos)
 {
   root->setLocalPos(pos);
+  
+  if (physXRoot != nullptr)
+  {
+    PxTransform trans = physXRoot->getGlobalPose();
+    trans.p = PxVec3(pos.x(), pos.y(), pos.z());
+    physXRoot->setGlobalPose(trans);
+    
+    physXRoot->clearForce();
+    physXRoot->clearTorque();
+    physXRoot->setLinearVelocity(PxVec3(0,0,0));
+    physXRoot->setAngularVelocity(PxVec3(0,0,0));
+  }
 }
 
 void Tool::setRotation(cMatrix3d rot)
@@ -32,23 +52,15 @@ void Tool::setRotation(cMatrix3d rot)
 
 void Tool::update()
 {
-  for (int i = 0; i < physXTools.size(); ++i)
-  {
-    PxTransform t = physXTools[i]->getGlobalPose();
-    cTransform m = convertMatrix(t);
-    
-    tools[i]->setLocalTransform(m);
-  }
+  PxTransform t = physXRoot->getGlobalPose();
+  cTransform m = convertMatrix(t);
+  
+  root->setLocalTransform(m);
 }
 
 void Tool::addToWorld(cWorld* world)
 {
   world->addChild(root);
-}
-
-cMesh* Tool::getMesh()
-{
-  return root;
 }
 
 void Tool::addReferenceFrames()
@@ -90,10 +102,31 @@ void Tool::enableInteraction(bool b)
   }
 }
 
-void Tool::applyForce(cVector3d force)
+void Tool::applyForceToDevice()
 {
-  for (PxRigidDynamic* physXTool : physXTools)
-    physXTool->addForce(PxVec3(force.x(), force.y(), force.z()));
+  cVector3d force(0, 0, 0);
+  
+  cVector3d position;
+  device->getPosition(position);
+  position *= scale;
+  
+  force = getPosition() - position;
+  force *= springConstant;
+  
+  device->setForceAndTorqueAndGripperForce(force, cVector3d(), 0.0);
+}
+
+void Tool::applyForce()
+{
+  cVector3d position;
+  device->getPosition(position);
+  position *= scale;
+  
+  cVector3d force = position - getPosition();
+  force *= springConstant;
+  
+  PxVec3 f = PxVec3(force.x(), force.y(), force.z());
+  physXRoot->addForce(f);
 }
 
 

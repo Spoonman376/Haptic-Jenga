@@ -25,12 +25,6 @@ public:
   void setUp();
   
   void enableInteraction(bool);
-  
-  cVector3d getPosition();
-  void setPosition(cVector3d pos);
-  
-  void applyForceToDevice(double scale);
-  void applyForce();
 };
 
 #endif /* SphereTool_h */
