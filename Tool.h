@@ -12,14 +12,15 @@ class Tool
 {
 protected:
   cGenericHapticDevicePtr device;
+  cVector3d fixPosition(cVector3d pos, cCamera* camera, double scale);
   
 public:
   cMesh* root;
   PxRigidDynamic* physXRoot;
 
-  vector<cMesh*> tools;
-  vector<PxRigidDynamic*> physXTools;
-  vector<Spring*> springs;
+//  vector<cMesh*> tools;
+//  vector<PxRigidDynamic*> physXTools;
+//  vector<Spring*> springs;
   
   Tool(cGenericHapticDevicePtr, double scale);
   ~Tool();
@@ -44,8 +45,8 @@ public:
   virtual void enableInteraction(bool);
   
   // Applies a the force to all the physxtools
-  virtual void applyForceToDevice();
-  virtual void applyForce();
+  virtual void applyForceToDevice(cCamera*);
+  virtual void applyForce(cCamera*);
 };
 
 #endif /* Tool_h */

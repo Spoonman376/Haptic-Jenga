@@ -40,7 +40,7 @@ public:
   PhysXMain();
   ~PhysXMain();
     
-  const double gravity = -9.81 * 0.01;
+  const double gravity = -9.81 * 0.2;
   const double contactOffset = 0.002;
   
   void collisionFunction(PxContactModifyPair* const, PxU32);

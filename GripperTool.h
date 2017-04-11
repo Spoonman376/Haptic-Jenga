@@ -15,10 +15,14 @@ private:
   
   
 public:
+  vector<cMesh*> tools;
+  vector<PxRigidDynamic*> physXTools;
+  vector<PxD6Joint*> joints;
+
   bool gripMode = false;
-  double maxdistance = 1.0;
-  double mindistance = 0.2;
-  double distance = 1.0;
+  double maxdistance = 0.3;
+  double mindistance = 0.05;
+  double distance = 0.05;
   double rotation = 0.0;
   
   GripperTool(cGenericHapticDevicePtr, double s);

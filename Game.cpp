@@ -12,7 +12,7 @@ Game::Game(vector<cGenericHapticDevicePtr> devicePtrs)
   camera = new cCamera(world);
   world->addChild(camera);
   
-  camera->setSphericalRad(0.5, M_PI / 3.0, 0);
+  camera->setSphericalRad(0.5, M_PI / 3.0, M_PI / 2.0);
   
   // set the near and far clipping planes of the camera
   camera->setClippingPlanes(0.01, 10.0);
@@ -56,15 +56,21 @@ Game::Game(vector<cGenericHapticDevicePtr> devicePtrs)
   Block::dimY *= scale;
   Block::dimZ *= scale;
   
-  for (int i = 0; i < (levels * 3); ++i)
-//  for (int i = 0; i < 2; ++ i)
-  {
-    Block* b = new Block(scale);
-    blocks.push_back(b);
-    b->addToWorld(world);
-  }
+  gripper = new GripperTool(*new cGenericHapticDevicePtr(), scale);
+  gripper->setPosition(cVector3d(0.0, 0.0, 0.075));
+  physics.initGripper(gripper);
+  gripper->addToWorld(world);
+  gripper->enableInteraction(true);
   
-  physics.initBlock(blocks);
+//  for (int i = 0; i < (levels * 3); ++i)
+//  for (int i = 0; i < 2; ++ i)
+//  {
+//    Block* b = new Block(scale);
+//    blocks.push_back(b);
+//    b->addToWorld(world);
+//  }
+//  
+//  physics.initBlock(blocks);
 
   
   Wall* floor = new Wall(0.5, 0.5, cVector3d(0.0, 0.0, 0.0), cVector3d(0.0, 0.0, 1.0), 0.0, "tiles.jpg");
@@ -121,25 +127,28 @@ void Game::reset()
   timer.stop();
   timer.reset();
   
+  gripper->physXRoot->addTorque(PxVec3(0.0, 100.0, 1.0));
+//  gripper->physXTools[0]->addTorque(PxVec3(0.0, 1.0, 0.0));
+
 //  testScene();
   
-  for (int i = 0; i < levels; ++i)
-  {
-    Block* b1 = blocks[(i * 3)];
-    Block* b2 = blocks[(i * 3) + 1];
-    Block* b3 = blocks[(i * 3) + 2];
-    
-    cMatrix3d rotation = cMatrix3d(cVector3d(0, 0, 1), (i % 4) * M_PI_2);
-    
-    b1->setPosition(rotation * cVector3d(-b1->dimX * 1.02, 0, (i + 1) * b1->dimZ * 1.1));
-    b2->setPosition(           cVector3d(0,                0, (i + 1) * b2->dimZ * 1.1));
-    b3->setPosition(rotation * cVector3d(b3->dimX * 1.02,  0, (i + 1) * b2->dimZ * 1.1));
-    
-    b1->setRotation(rotation);
-    b2->setRotation(rotation);
-    b3->setRotation(rotation);
-  }
-  
+//  for (int i = 0; i < levels; ++i)
+//  {
+//    Block* b1 = blocks[(i * 3)];
+//    Block* b2 = blocks[(i * 3) + 1];
+//    Block* b3 = blocks[(i * 3) + 2];
+//    
+//    cMatrix3d rotation = cMatrix3d(cVector3d(0, 0, 1), (i % 4) * M_PI_2);
+//    
+//    b1->setPosition(rotation * cVector3d(-b1->dimX * 1.02, 0, (i + 1) * b1->dimZ * 1.1));
+//    b2->setPosition(           cVector3d(0,                0, (i + 1) * b2->dimZ * 1.1));
+//    b3->setPosition(rotation * cVector3d(b3->dimX * 1.02,  0, (i + 1) * b2->dimZ * 1.1));
+//    
+//    b1->setRotation(rotation);
+//    b2->setRotation(rotation);
+//    b3->setRotation(rotation);
+//  }
+//  
   enableInteraction(false);
   
   gameRunning = true;
@@ -194,11 +203,13 @@ void Game::gameLoop()
     cGenericHapticDevicePtr hand = hands[i];
     SphereTool* cursor = cursors[i];
     
-    cursor->applyForce();
+    cursor->applyForce(camera);
   }
+  
+  gripper->applyForce();
     
-//  while(timer.getCurrentTimeSeconds() < 0.001);
-//  timer.reset();
+  while(timer.getCurrentTimeSeconds() < 0.001);
+  timer.reset();
   
   physics.stepPhysics(0.001);
   
@@ -215,8 +226,10 @@ void Game::gameLoop()
     
     cursor->update();
     
-    cursor->applyForceToDevice();
+    cursor->applyForceToDevice(camera);
   }
+  
+  gripper->update();
 }
 
 void Game::renderLoop(int width, int height)

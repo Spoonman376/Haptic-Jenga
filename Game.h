@@ -16,6 +16,9 @@ private:
   
   vector<cGenericHapticDevicePtr> hands;
   vector<SphereTool*> cursors;
+  vector<GripperTool*> grippers;
+  
+  GripperTool* gripper;
 
   vector<Block*> blocks;
   vector<Wall*> room;
