@@ -27,18 +27,6 @@ cVector3d Tool::getPosition()
 void Tool::setPosition(cVector3d pos)
 {
   root->setLocalPos(pos);
-  
-//  if (physXRoot != nullptr)
-//  {
-//    PxTransform trans = physXRoot->getGlobalPose();
-//    trans.p = PxVec3(pos.x(), pos.y(), pos.z());
-//    physXRoot->setGlobalPose(trans);
-//    
-//    physXRoot->clearForce();
-//    physXRoot->clearTorque();
-//    physXRoot->setLinearVelocity(PxVec3(0,0,0));
-//    physXRoot->setAngularVelocity(PxVec3(0,0,0));
-//  }
 }
 
 void Tool::setRotation(cMatrix3d rot)
@@ -93,15 +81,12 @@ void Tool::enableInteraction(bool b)
 
 void Tool::applyForceToDevice(cCamera* camera)
 {
-  cVector3d force(0, 0, 0);
-  
   cVector3d position;
   device->getPosition(position);
 
-  position = fixPosition(position, camera, scale);
+  fixPosition(position, camera, scale);
   
-  force = getPosition() - position;
-  force *= springConstant;
+  cVector3d force = (getPosition() - position) * springConstant;
   
   force = cMatrix3d(cVector3d(0.0, 0.0, 1.0), - camera->getSphericalAzimuthRad()) * force;
   
@@ -113,25 +98,17 @@ void Tool::applyForce(cCamera* camera)
   cVector3d position;
   device->getPosition(position);
  
-  position = fixPosition(position, camera, scale);
+  fixPosition(position, camera, scale);
 
-  cVector3d force = position - getPosition();
-  force *= springConstant;
+  cVector3d force = (position - getPosition()) * springConstant;
   
-  PxVec3 f = PxVec3(force.x(), force.y(), force.z());
-  physXRoot->addForce(f);
+  physXRoot->addForce(PxVec3(force.x(), force.y(), force.z()));
 }
 
-cVector3d Tool::fixPosition(cVector3d pos, cCamera* camera, double scale)
+void Tool::fixPosition(cVector3d &pos, cCamera* camera, double scale)
 {
   cMatrix3d rot = cMatrix3d(cVector3d(0.0, 0.0, 1.0), camera->getSphericalAzimuthRad());
-  pos = rot * pos;
-  
-  pos *= scale;
-  
-  pos += camera->getSphericalOriginReference();
-  
-  return pos;
+  pos = ((rot * pos) * scale) + camera->getSphericalOriginReference();
 }
 
 

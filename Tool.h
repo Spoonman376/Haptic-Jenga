@@ -11,16 +11,12 @@ class Tool
 {
 protected:
   cGenericHapticDevicePtr device;
-  cVector3d fixPosition(cVector3d pos, cCamera* camera, double scale);
+  void fixPosition(cVector3d &pos, cCamera* camera, double scale);
   
 public:
   cMesh* root;
   PxRigidDynamic* physXRoot;
 
-//  vector<cMesh*> tools;
-//  vector<PxRigidDynamic*> physXTools;
-//  vector<Spring*> springs;
-  
   Tool(cGenericHapticDevicePtr, double scale);
   ~Tool();
   

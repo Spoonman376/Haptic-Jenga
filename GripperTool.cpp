@@ -115,15 +115,16 @@ void GripperTool::applyForce(cCamera* camera)
   bool grip;
   device->getUserSwitch(0, grip);
   grip ? distance = max(minDistance, distance * 0.99) : distance = min(maxDistance, distance * 1.01);
-  for (int i = 0; i < 2; ++i) {
-    joints[i]->setMaxDistance(distance);
-    joints[i]->setMinDistance(distance);
+  
+  if (distance != minDistance && distance != maxDistance) {
+    for (int i = 0; i < 2; ++i) {
+      joints[i]->setMaxDistance(distance);
+      joints[i]->setMinDistance(distance);
+    }
+    joints[2]->setMaxDistance(distance * 2.0);
+    joints[2]->setMinDistance(distance * 2.0);
   }
-  joints[2]->setMaxDistance(distance * 2.0);
-  joints[2]->setMinDistance(distance * 2.0);
 
-  
-  
   // Turn the gripper
   bool turn;
   device->getUserSwitch(1, turn);
@@ -142,15 +143,6 @@ void GripperTool::applyForce(cCamera* camera)
   
   PxVec3 w = newPoint.cross(oldPoint);
   w *= asin(w.normalize());
-  
-  PxQuat q = physXRoot->getGlobalPose().q;
-  PxVec3 tensors = physXRoot->getMassSpaceInertiaTensor();
-  
-  w = q.rotateInv(w);
-//  w.x *= tensors.x;
-//  w.y *= tensors.y;
-//  w.z *= tensors.z;
-  w = q.rotate(w);
   
   physXRoot->addTorque(w * springConstant);
 }

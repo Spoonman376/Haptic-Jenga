@@ -150,7 +150,7 @@ void Game::reset()
     b3->setRotation(rotation);
   }
 
-  blocks[0]->physXBlock->addForce(PxVec3(1000,0,20000));
+  blocks[0]->physXBlock->addForce(PxVec3(0,0,20000));
   
   enableInteraction(false);
   
@@ -229,8 +229,8 @@ void Game::gameLoop()
       
   }
   
-  while(timer.getCurrentTimeSeconds() < 0.001);
-  timer.reset();
+//  while(timer.getCurrentTimeSeconds() < 0.001);
+//  timer.reset();
 
   physics.stepPhysics(0.001);
   
