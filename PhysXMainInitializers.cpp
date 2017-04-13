@@ -93,10 +93,7 @@ void PhysXMain::initGripper(GripperTool* g)
     
     PxD6Joint* joint = PxD6JointCreate(*gPhysics, g->physXRoot, t, body, t);
     joint->setMotion(PxD6Axis::eX, PxD6Motion::eFREE);
-//    joint->setMotion(PxD6Axis::eTWIST,  PxD6Motion::eFREE);
-//    joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
-//    joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
-    
+
     PxDistanceJoint* dJoint = PxDistanceJointCreate(*gPhysics, body, t, g->physXRoot, t);
     dJoint->setMaxDistance(g->distance);
     dJoint->setDistanceJointFlag(physx::PxDistanceJointFlag::eMAX_DISTANCE_ENABLED, true);

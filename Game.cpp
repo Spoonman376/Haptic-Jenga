@@ -120,8 +120,6 @@ void Game::testScene()
 
   b1->setRotation(rotation);
   b2->setRotation(cMatrix3d(cVector3d(0, 0, 1),  0));
-  
-//  b2->physXBlock->setMassSpaceInertiaTensor(PxVec3(0,0,0));
 }
 
 void Game::reset()
@@ -130,9 +128,7 @@ void Game::reset()
 
   timer.stop();
   timer.reset();
-  
-//  testScene();
-  
+
   for (int i = 0; i < levels; ++i)
   {
     Block* b1 = blocks[(i * 3)];
@@ -149,8 +145,6 @@ void Game::reset()
     b2->setRotation(rotation);
     b3->setRotation(rotation);
   }
-
-  blocks[0]->physXBlock->addForce(PxVec3(0,0,20000));
   
   enableInteraction(false);
   

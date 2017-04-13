@@ -10,7 +10,7 @@ ContactModifyCallback::ContactModifyCallback(PhysXMain* px)
 
 void ContactModifyCallback::onContactModify(PxContactModifyPair* const pairs, PxU32 count)
 {
-  physX->collisionFunction(pairs, count);
+//  physX->collisionFunction(pairs, count);
 }
 
 void PhysXMain::collisionFunction(PxContactModifyPair* const pairs, PxU32 count)
