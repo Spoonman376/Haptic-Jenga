@@ -25,6 +25,7 @@ public:
   void setUp();
   
   void enableInteraction(bool);
+  void applyForce(cCamera*);
 };
 
 #endif /* SphereTool_h */

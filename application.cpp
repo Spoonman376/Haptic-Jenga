@@ -345,6 +345,9 @@ void motion(GLFWwindow* window, double x, double y)
   mouseOldX = x;
   mouseOldY = y;
   
+  if (game->interactionEnabled)
+    game->enableInteraction(false);
+  
   if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1))
   {
     double azu = game->camera->getSphericalAzimuthRad();

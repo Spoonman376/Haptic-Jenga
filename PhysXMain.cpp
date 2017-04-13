@@ -23,7 +23,9 @@ PhysXMain::PhysXMain()
   gScene = gPhysics->createScene(sceneDesc);
   
   //static friction, dynamic friction, restitution
-  gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
+  boxMaterial = gPhysics->createMaterial(0.3f, 0.25f, 0.6f);
+  planeMaterial = gPhysics->createMaterial(0.5f, 0.4f, 0.6f);
+  cursorMaterial = gPhysics->createMaterial(0.7f, 0.7f, 0.6f);
 }
 
 PhysXMain::~PhysXMain()

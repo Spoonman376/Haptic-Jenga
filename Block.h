@@ -10,14 +10,13 @@ using namespace chai3d;
 class Block
 {
 private:
-  // chai3d Object
-  cGenericObject* blockFrame;
-  PxRigidDynamic* physXBlock;
-  
   cMesh* createWall(double width, double height, cVector3d pos, cVector3d axis, double angle);
   
   
 public:
+  cGenericObject* blockFrame;
+  PxRigidDynamic* physXBlock;
+
   Block(double s);
   ~Block();
   

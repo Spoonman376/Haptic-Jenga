@@ -1,4 +1,4 @@
-//
+ //
 //
 
 #include "Game.h"
@@ -30,25 +30,34 @@ Game::Game(vector<cGenericHapticDevicePtr> devicePtrs)
   light->m_shadowMap->setQualityVeryHigh();
   light->m_shadowMap->setCamera(camera);
   
-  // define direction of light beam
-  light->setLocalPos(cVector3d(0.5, 0.5, 1.5) * 2.5);
-  light->setDir(-0.5, -0.5, -1.5);
+  // define direction and position of light
+  light->setLocalPos(cVector3d(0.5, 0.5, 3.0) * 2.5);
+  light->setDir(-0.5, -0.5, -3.0);
   light->setSpotExponent(0.001);
-  light->setCutOffAngleDeg(5);
-  
+  light->setCutOffAngleDeg(4);
+
   hands = devicePtrs;
+  cursor = nullptr;
+  gripper = nullptr;
     
-  for (cGenericHapticDevicePtr hand : hands)
+  for (int i = 0; i < hands.size(); ++i)
   {
+    cGenericHapticDevicePtr hand = hands[i];
+    
     hand->open();
     hand->calibrate();
     
     // create the cursor to go along with the device
-    SphereTool* cursor = new SphereTool(hand, scale);
-    cursor->addToWorld(world);
-    cursors.push_back(cursor);
-    
-    physics.initSphere(cursor);
+    if (i == 0) {
+      gripper = new GripperTool(hand, scale);
+      gripper->addToWorld(world);
+      physics.initGripper(gripper);
+    }
+    else {
+      cursor = new SphereTool(hand, scale);
+      cursor->addToWorld(world);
+      physics.initSphere(cursor);
+    }
   }
   
   //create 9 blocks
@@ -56,21 +65,15 @@ Game::Game(vector<cGenericHapticDevicePtr> devicePtrs)
   Block::dimY *= scale;
   Block::dimZ *= scale;
   
-  gripper = new GripperTool(*new cGenericHapticDevicePtr(), scale);
-  gripper->setPosition(cVector3d(0.0, 0.0, 0.075));
-  physics.initGripper(gripper);
-  gripper->addToWorld(world);
-  gripper->enableInteraction(true);
-  
-//  for (int i = 0; i < (levels * 3); ++i)
+  for (int i = 0; i < (levels * 3); ++i)
 //  for (int i = 0; i < 2; ++ i)
-//  {
-//    Block* b = new Block(scale);
-//    blocks.push_back(b);
-//    b->addToWorld(world);
-//  }
-//  
-//  physics.initBlock(blocks);
+  {
+    Block* b = new Block(scale);
+    blocks.push_back(b);
+    b->addToWorld(world);
+  }
+  
+  physics.initBlock(blocks);
 
   
   Wall* floor = new Wall(0.5, 0.5, cVector3d(0.0, 0.0, 0.0), cVector3d(0.0, 0.0, 1.0), 0.0, "tiles.jpg");
@@ -83,8 +86,11 @@ Game::~Game()
   for (cGenericHapticDevicePtr hand : hands)
     hand->close();
   
-  for (SphereTool* cursor : cursors)
+  if (cursor != nullptr)
     delete cursor;
+  
+  if (gripper != nullptr)
+    delete gripper;
   
   for (Block* block : blocks)
     delete block;
@@ -99,7 +105,6 @@ Game::~Game()
 
 void Game::start()
 {
-  lock = false;
   reset();
 }
 
@@ -121,45 +126,46 @@ void Game::testScene()
 
 void Game::reset()
 {
-  gameRunning = false;
-  while (lock);
-  
+  lock.lock();
+
   timer.stop();
   timer.reset();
   
-  gripper->physXRoot->addTorque(PxVec3(0.0, 100.0, 1.0));
-//  gripper->physXTools[0]->addTorque(PxVec3(0.0, 1.0, 0.0));
-
 //  testScene();
   
-//  for (int i = 0; i < levels; ++i)
-//  {
-//    Block* b1 = blocks[(i * 3)];
-//    Block* b2 = blocks[(i * 3) + 1];
-//    Block* b3 = blocks[(i * 3) + 2];
-//    
-//    cMatrix3d rotation = cMatrix3d(cVector3d(0, 0, 1), (i % 4) * M_PI_2);
-//    
-//    b1->setPosition(rotation * cVector3d(-b1->dimX * 1.02, 0, (i + 1) * b1->dimZ * 1.1));
-//    b2->setPosition(           cVector3d(0,                0, (i + 1) * b2->dimZ * 1.1));
-//    b3->setPosition(rotation * cVector3d(b3->dimX * 1.02,  0, (i + 1) * b2->dimZ * 1.1));
-//    
-//    b1->setRotation(rotation);
-//    b2->setRotation(rotation);
-//    b3->setRotation(rotation);
-//  }
-//  
+  for (int i = 0; i < levels; ++i)
+  {
+    Block* b1 = blocks[(i * 3)];
+    Block* b2 = blocks[(i * 3) + 1];
+    Block* b3 = blocks[(i * 3) + 2];
+    
+    cMatrix3d rotation = cMatrix3d(cVector3d(0, 0, 1), (i % 4) * M_PI_2);
+    
+    b1->setPosition(rotation * cVector3d(-b1->dimX * 1.02, 0, (i + 1) * b1->dimZ * 1.1));
+    b2->setPosition(           cVector3d(0,                0, (i + 1) * b2->dimZ * 1.1));
+    b3->setPosition(rotation * cVector3d(b3->dimX * 1.02,  0, (i + 1) * b2->dimZ * 1.1));
+    
+    b1->setRotation(rotation);
+    b2->setRotation(rotation);
+    b3->setRotation(rotation);
+  }
+
+  blocks[0]->physXBlock->addForce(PxVec3(1000,0,20000));
+  
   enableInteraction(false);
   
-  gameRunning = true;
   timer.start();
+  lock.unlock();
 }
 
 void Game::enableInteraction(bool b)
 {
-  for (SphereTool* cursor : cursors)
+  if (cursor != nullptr)
     cursor->enableInteraction(b);
-  
+
+  if (gripper != nullptr)
+    gripper->enableInteraction(b);
+
   for (Block* block : blocks)
     block->enableInteraction(b);
   
@@ -183,13 +189,8 @@ void Game::checkEnableInteraction()
 
 void Game::gameLoop()
 {
-  if(!gameRunning)
-  {
-    lock = false;
-    while (!gameRunning);
-    lock = true;
-  }
-    
+  lock.lock();
+
   if (!interactionEnabled)
     checkEnableInteraction();
     
@@ -198,19 +199,39 @@ void Game::gameLoop()
    * Apply forces to the physx cursors
    */
   
-  for (int i = 0; i < hands.size(); ++i)
-  {
-    cGenericHapticDevicePtr hand = hands[i];
-    SphereTool* cursor = cursors[i];
-    
+  if (cursor != nullptr)
     cursor->applyForce(camera);
+  
+  if (gripper != nullptr)
+    gripper->applyForce(camera);
+  
+  if (hands.size() > 0)
+  {
+    int cameraMove = 0;
+    for (cGenericHapticDevicePtr hand : hands)
+    {
+      cVector3d pos;
+      hand->getPosition(pos);
+      pos.normalize();
+      double result = pos * cVector3d(0,0,1);
+      if (result > 0.8)
+        ++cameraMove;
+      if (result < -0.7)
+        --cameraMove;
+    }
+    
+    if (abs(cameraMove) == 2)
+    {
+      cVector3d pos = camera->getSphericalOriginReference();
+      (cameraMove == 2) ? pos.z(pos.z() + 0.000075) : pos.z(pos.z() - 0.000075);
+      camera->setSphericalOriginReference(pos);
+    }
+      
   }
   
-  gripper->applyForce();
-    
   while(timer.getCurrentTimeSeconds() < 0.001);
   timer.reset();
-  
+
   physics.stepPhysics(0.001);
   
   /* update position and orienation of the scene objects
@@ -219,17 +240,17 @@ void Game::gameLoop()
   for (Block* block : blocks)
     block->update();
   
-  for (int i = 0; i < hands.size(); ++i)
-  {
-    cGenericHapticDevicePtr hand = hands[i];
-    SphereTool* cursor = cursors[i];
-    
+  if (cursor != nullptr) {
     cursor->update();
-    
     cursor->applyForceToDevice(camera);
   }
-  
-  gripper->update();
+
+  if (gripper != nullptr) {
+    gripper->update();
+    gripper->applyForceToDevice(camera);
+  }
+
+  lock.unlock();
 }
 
 void Game::renderLoop(int width, int height)

@@ -6,7 +6,6 @@
 
 #include <stdio.h>
 #include "PhysXUtilities.h"
-#include "Spring.h"
 
 class Tool
 {

@@ -17,11 +17,11 @@ private:
 public:
   vector<cMesh*> tools;
   vector<PxRigidDynamic*> physXTools;
-  vector<PxD6Joint*> joints;
+  vector<PxDistanceJoint*> joints;
 
   bool gripMode = false;
-  double maxdistance = 0.3;
-  double mindistance = 0.05;
+  double maxDistance = 0.04;
+  double minDistance = 0.02;
   double distance = 0.05;
   double rotation = 0.0;
   
@@ -32,8 +32,7 @@ public:
   void enableInteraction(bool);
   
   // Applies a the force to all the physxtools
-  //void applyForceToDevice();
-  void applyForce();
+  void applyForce(cCamera* camera);
 };
 
 

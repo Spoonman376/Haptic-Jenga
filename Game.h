@@ -14,10 +14,9 @@
 class Game {
 private:
   
-  vector<cGenericHapticDevicePtr> hands;
-  vector<SphereTool*> cursors;
-  vector<GripperTool*> grippers;
+  vector<cGenericHapticDevicePtr> hands;  
   
+  SphereTool* cursor;
   GripperTool* gripper;
 
   vector<Block*> blocks;
@@ -26,17 +25,18 @@ private:
   PhysXMain physics;
   
   cPrecisionClock timer;
-  
-  bool lock;
-  bool gameRunning;
-  bool interactionEnabled;
-  const int levels = 5;
+
+  mutex lock;
+
+  const int levels = 8;
   const double scale = 4.0;
   
   void checkEnableInteraction();
   void testScene();
   
 public:
+  bool interactionEnabled;
+  
   cWorld* world;
   cCamera* camera;
   cSpotLight* light;

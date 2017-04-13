@@ -5,7 +5,7 @@
 
 void PhysXMain::initBlock(vector<Block*> &blocks)
 {
-  PxShape* shape = gPhysics->createShape(PxBoxGeometry(Block::dimX / 2.0, Block::dimY / 2.0, Block::dimZ / 2.0), *gMaterial);
+  PxShape* shape = gPhysics->createShape(PxBoxGeometry(Block::dimX / 2.0, Block::dimY / 2.0, Block::dimZ / 2.0), *boxMaterial);
   
   shape->setContactOffset(contactOffset);
   
@@ -22,7 +22,7 @@ void PhysXMain::initBlock(vector<Block*> &blocks)
     PxRigidDynamic *body = gPhysics->createRigidDynamic(trans);
     body->attachShape(*shape);
     
-    PxRigidBodyExt::updateMassAndInertia(*body, 100.0);
+    PxRigidBodyExt::updateMassAndInertia(*body, 4500.0);
     
     body->setLinearDamping(1.0);
     body->setAngularDamping(1.0);
@@ -36,7 +36,7 @@ void PhysXMain::initBlock(vector<Block*> &blocks)
 
 void PhysXMain::initSphere(SphereTool *s)
 {
-  PxShape* shape = gPhysics->createShape(PxConvexMeshGeometry(initConvexMesh(s->root)), *gMaterial);
+  PxShape* shape = gPhysics->createShape(PxConvexMeshGeometry(initConvexMesh(s->root)), *cursorMaterial);
   shape->setContactOffset(contactOffset);
   
   cVector3d pos = s->getPosition();
@@ -45,11 +45,11 @@ void PhysXMain::initSphere(SphereTool *s)
   
   body->attachShape(*shape);
   
-  PxRigidBodyExt::updateMassAndInertia(*body, 15000.0);
+  PxRigidBodyExt::updateMassAndInertia(*body, 17500.0);
   body->setLinearDamping(2 * sqrt(s->springConstant * body->getMass()));
   body->setAngularDamping(2 * sqrt(body->getMass()));
   
-//  body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
+  body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
   
   s->setRootActor(body);
   
@@ -59,18 +59,22 @@ void PhysXMain::initSphere(SphereTool *s)
 
 void PhysXMain::initGripper(GripperTool* g)
 {
-  PxShape* shape = gPhysics->createShape(PxConvexMeshGeometry(initConvexMesh(g->tools[0])), *gMaterial);
+  PxShape* shape = gPhysics->createShape(PxConvexMeshGeometry(initConvexMesh(g->tools[0])), *cursorMaterial);
   
   cVector3d pos = g->getPosition();
   g->physXRoot = gPhysics->createRigidDynamic(PxTransform(PxVec3(pos.x(), pos.y(), pos.z())));
-  g->physXRoot->attachShape(* gPhysics->createShape(PxSphereGeometry(0.01), *gMaterial));
+  g->physXRoot->attachShape(* gPhysics->createShape(PxSphereGeometry(0.01), *cursorMaterial));
   
   g->physXRoot->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
   g->physXRoot->setAngularDamping(3.0);
   
-  PxRigidBodyExt::updateMassAndInertia(*g->physXRoot, 15000.0);
-  
+  PxRigidBodyExt::updateMassAndInertia(*g->physXRoot, 10000.0);
+  g->physXRoot->setLinearDamping(2 * sqrt(g->springConstant * g->physXRoot->getMass()));
+
   gScene->addActor(* g->physXRoot);
+  
+  PxTransform t = PxTransform::createIdentity();
+  t.p = PxVec3(0,0,0);
   
   for (int i = 0; i < g->tools.size(); ++i) {
     PxVec3 offset = PxVec3(g->distance, 0, 0);
@@ -81,46 +85,54 @@ void PhysXMain::initGripper(GripperTool* g)
     PxRigidDynamic* body = gPhysics->createRigidDynamic(trans);
     body->attachShape(*shape);
     
-    PxRigidBodyExt::updateMassAndInertia(*body, 150);
+    PxRigidBodyExt::updateMassAndInertia(*body, 10000.0);
     body->setLinearDamping(2 * sqrt(g->springConstant * body->getMass()));
     body->setAngularDamping(2 * sqrt(body->getMass()));
     
     body->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, true);
     
-    PxTransform t = PxTransform::createIdentity();
-    t.p = PxVec3(0,0,0);
-    
     PxD6Joint* joint = PxD6JointCreate(*gPhysics, g->physXRoot, t, body, t);
     joint->setMotion(PxD6Axis::eX, PxD6Motion::eFREE);
-    joint->setMotion(PxD6Axis::eTWIST,  PxD6Motion::eFREE);
-    joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
-    joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
+//    joint->setMotion(PxD6Axis::eTWIST,  PxD6Motion::eFREE);
+//    joint->setMotion(PxD6Axis::eSWING1, PxD6Motion::eFREE);
+//    joint->setMotion(PxD6Axis::eSWING2, PxD6Motion::eFREE);
     
     PxDistanceJoint* dJoint = PxDistanceJointCreate(*gPhysics, body, t, g->physXRoot, t);
     dJoint->setMaxDistance(g->distance);
     dJoint->setDistanceJointFlag(physx::PxDistanceJointFlag::eMAX_DISTANCE_ENABLED, true);
     dJoint->setMinDistance(g->distance);
     dJoint->setDistanceJointFlag(physx::PxDistanceJointFlag::eMIN_DISTANCE_ENABLED, true);
-    dJoint->setStiffness(1.0);
+    dJoint->setStiffness(g->springConstant / 2.0);
+    dJoint->setTolerance(0);
     
-//    g->springs.push_back(dJoint);
+    g->joints.push_back(dJoint);
     
     g->physXTools.push_back(body);
     
     gScene->addActor(*body);
   }
+  
+  PxDistanceJoint* dJoint = PxDistanceJointCreate(*gPhysics, g->physXTools[0], t, g->physXTools[1], t);
+  dJoint->setMaxDistance(g->distance * 2.0);
+  dJoint->setDistanceJointFlag(physx::PxDistanceJointFlag::eMAX_DISTANCE_ENABLED, true);
+  dJoint->setMinDistance(g->distance * 2.0);
+  dJoint->setDistanceJointFlag(physx::PxDistanceJointFlag::eMIN_DISTANCE_ENABLED, true);
+  dJoint->setStiffness(g->springConstant / 2.0);
+  dJoint->setTolerance(0);
+  
+  g->joints.push_back(dJoint);
 }
 
 void PhysXMain::initWall(Wall* w)
 {
   // Create the shape
-  PxShape* shape = gPhysics->createShape(PxBoxGeometry(w->getWidth() / 2.0, w->getHeight() / 2.0, 0.05), *gMaterial);
+  PxShape* shape = gPhysics->createShape(PxBoxGeometry(w->getWidth() / 2.0, w->getHeight() / 2.0, 0.1), *planeMaterial);
   
   shape->setContactOffset(contactOffset);
   
   PxFilterData filterData;
-  filterData.word0 = filter::PLANE; // word0 = own ID
-  filterData.word1 = filter::BLOCK | filter::CURSOR;  // word1 = ID mask to filter pairs that trigger a contact callback
+  filterData.word0 = PLANE; // word0 = own ID
+  filterData.word1 = BLOCK | CURSOR | UNTOUCHABLE;  // word1 = ID mask to filter pairs that trigger a contact callback
   
   shape->setSimulationFilterData(filterData);
   
@@ -131,7 +143,7 @@ void PhysXMain::initWall(Wall* w)
   double angle; // radians
   w->getRotation().toAxisAngle(a, angle);
   
-  PxVec3 position = PxVec3(p.x(), p.y(), p.z()) - 0.05 * PxVec3(n.x(), n.y(), n.z());
+  PxVec3 position = PxVec3(p.x(), p.y(), p.z()) - 0.1 * PxVec3(n.x(), n.y(), n.z());
   PxTransform trans = PxTransform(position, PxQuat(angle, PxVec3(a.x(), a.y(), a.z())));
   PxRigidStatic* plane = gPhysics->createRigidStatic(trans);
   

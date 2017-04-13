@@ -30,9 +30,12 @@ private:
   PxPhysics*				          gPhysics = NULL;
   PxDefaultCpuDispatcher*   	gDispatcher = NULL;
   PxScene*				            gScene = NULL;
-  PxMaterial*				          gMaterial = NULL;
   PxBatchQuery*			          gBatchQuery = NULL;
   PxCooking*                  gCooking = NULL;
+
+  PxMaterial*				          boxMaterial = NULL;
+  PxMaterial*				          planeMaterial = NULL;
+  PxMaterial*				          cursorMaterial = NULL;
   
   PxConvexMesh* initConvexMesh(cMesh* mesh);
   

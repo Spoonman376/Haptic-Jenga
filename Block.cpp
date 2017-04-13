@@ -3,7 +3,7 @@
 #include "Block.h"
 
 
-double Block::scale = 0.5;
+double Block::scale = 0.375;
 double Block::dimX = 0.025 * scale;
 double Block::dimY = 0.075 * scale;
 double Block::dimZ = 0.015 * scale;

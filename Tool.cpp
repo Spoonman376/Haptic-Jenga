@@ -103,7 +103,7 @@ void Tool::applyForceToDevice(cCamera* camera)
   force = getPosition() - position;
   force *= springConstant;
   
-  force = cMatrix3d(cVector3d(0.0, 0.0, 1.0), -camera->getSphericalAzimuthRad()) * force;
+  force = cMatrix3d(cVector3d(0.0, 0.0, 1.0), - camera->getSphericalAzimuthRad()) * force;
   
   device->setForce(force);
 }

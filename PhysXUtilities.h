@@ -20,6 +20,7 @@ enum filter
   BLOCK     = (1 << 0),
   CURSOR    = (1 << 1),
   PLANE     = (1 << 2),
+  UNTOUCHABLE = (1 << 3),
 };
 
 

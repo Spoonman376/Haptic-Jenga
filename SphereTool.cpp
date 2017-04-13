@@ -7,7 +7,7 @@
 
 SphereTool::SphereTool(cGenericHapticDevicePtr d, double scale) : Tool(d, scale)
 {
-  radius = 0.003 * scale;
+  radius = 0.002 * scale;
   
   cMultiMesh* mesh = new cMultiMesh();
   if(!mesh->loadFromFile("Tool.obj"))
@@ -17,6 +17,10 @@ SphereTool::SphereTool(cGenericHapticDevicePtr d, double scale) : Tool(d, scale)
 
   root = new cMesh();
   mesh->convertToSingleMesh(root);
+  
+  cVector3d pos;
+  d->getPosition(pos);
+  root->setLocalPos(pos);
 }
 
 SphereTool::~SphereTool()
@@ -30,6 +34,20 @@ void SphereTool::update()
   cTransform m = convertMatrix(t);
   
   root->setLocalTransform(m);
+}
+
+void SphereTool::applyForce(cCamera* camera)
+{
+  bool turn;
+  device->getUserSwitch(1, turn);
+  if (turn)
+    camera->setSphericalAzimuthRad(camera->getSphericalAzimuthRad() -0.0003);
+
+  device->getUserSwitch(3, turn);
+  if (turn)
+    camera->setSphericalAzimuthRad(camera->getSphericalAzimuthRad() +0.0003);
+  
+  Tool::applyForce(camera);
 }
 
 void SphereTool::enableInteraction(bool b)
