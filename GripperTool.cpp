@@ -7,7 +7,7 @@
 GripperTool::GripperTool(cGenericHapticDevicePtr d, double s) : Tool(d, s)
 {
   root = new cMesh();
-  cCreateSphere(root, 0.0075);
+  cCreateSphere(root, 0.0065);
 
   cVector3d pos;
   d->getPosition(pos);
@@ -102,7 +102,7 @@ void GripperTool::applyForce(cCamera* camera)
   cVector3d position;
   device->getPosition(position);
   
-  position = fixPosition(position, camera, scale);
+  fixPosition(position, camera, scale);
   
   cVector3d force = position - getPosition();
   force *= springConstant;
